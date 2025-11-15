@@ -1,179 +1,402 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>INFINITY Auto</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFINITY Auto — Автосалон</title>
+  <style>
+    :root {
+      --accent: #00e0c6;
+      --bg-gradient: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+    }
 
-<style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050816;
+      color: #fff;
+      user-select: none;
+    }
+
     body {
-        margin: 0;
-        font-family: Inter, sans-serif;
-        background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .top-info {
-        position: fixed;
-        top: 16px;
-        left: 16px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        z-index: 1000;
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
     }
 
-    .info-box {
-        background: rgba(255,255,255,0.35);
-        backdrop-filter: blur(12px);
-        border-radius: 18px;
-        padding: 8px 16px;
-        font-size: 18px;
-        font-weight: 600;
-        border: 1px solid rgba(0,0,0,0.15);
-        box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      }
     }
 
-    .back-arrow {
-        width: 30px;
-        height: 30px;
-        cursor: pointer;
-        transition: .25s;
-        opacity: .9;
-    }
-    .back-arrow:hover {
-        transform: translateX(-4px);
-        opacity: 1;
-    }
-
-    .dealer-title {
-        text-align: center;
-        font-size: 27px;
-        font-weight: 700;
-        margin-top: 90px;
+    .top-bar {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
+      left: 0;
+      right: 0;
+      padding: 0 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 1000;
     }
 
-    .brands {
-        margin-top: 45px;
-        display: flex;
-        justify-content: center;
-        gap: 42px;
-        flex-wrap: wrap;
-        padding-bottom: 40px;
+    .top-bar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .back-chip {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.32);
+      background: rgba(5, 9, 36, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      padding: 0;
+      outline: none;
+    }
+
+    .back-chip:active {
+      transform: translateY(1px);
+      opacity: 0.8;
+    }
+
+    .top-title {
+      font-size: clamp(18px, 4.6vw, 22px);
+      font-weight: 700;
+    }
+
+    .top-subtitle {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .balance-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(5, 9, 36, 0.82);
+      border: 1px solid rgba(255,255,255,0.22);
+      font-size: 12px;
+      white-space: nowrap;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+    }
+
+    .screen-content {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 64px);
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 16px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .section-caption {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+
+    .brand-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      padding-bottom: 8px;
     }
 
     .brand-card {
-        width: 250px;
-        height: 250px;
-        background: #fff;
-        border-radius: 28px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-
-        transition: 0.28s ease;
-        box-shadow:
-            0 8px 24px rgba(0,0,0,0.18),
-            0 0 12px rgba(0,0,0,0.12);
+      flex: 0 0 calc(50% - 10px);
+      max-width: 210px;
+      aspect-ratio: 1 / 1;
+      background: #ffffff;
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #111;
+      box-shadow:
+        0 10px 26px rgba(0,0,0,0.20),
+        0 0 18px rgba(0,0,0,0.12);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
 
-    .brand-card:hover {
-        transform: scale(1.06);
-        box-shadow:
-            0 14px 38px rgba(0,0,0,0.26),
-            0 0 18px rgba(0,0,0,0.18);
+    .brand-card:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    .brand-logo-wrap {
+      width: 96px;
+      height: 96px;
+      border-radius: 999px;
+      background: #f4f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      overflow: hidden;
     }
 
     .brand-card img {
-        width: 140px !important;
-        height: auto !important;
-        pointer-events: none;
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      pointer-events: none;
     }
 
     .brand-name {
-        margin-top: 14px;
-        font-size: 20px;
-        font-weight: 600;
-        color: #111;
+      margin-top: 2px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .help-text {
+      margin-top: 16px;
+      font-size: 13px;
+      opacity: 0.82;
+      line-height: 1.4;
+    }
+
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: #dfe9ff;
+      text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
+    }
+
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item span {
+      opacity: 0.85;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
+  
+
+    .top-info {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 52px);
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      z-index: 900;
+    }
+
+    .info-box {
+      flex: 0 0 auto;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.25);
+      text-align: center;
+      line-height: 1.2;
+      max-width: 60%;
+      white-space: nowrap;
     }
 </style>
 </head>
-
 <body>
 
-<div class="top-info">
-    <svg class="back-arrow" onclick="goBack()" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 18l-6-6 6-6"/>
-    </svg>
+<div class="app-shell">
 
-    <div class="info-box" id="balanceBox">Баланс: ...</div>
-</div>
+  <header class="top-bar">
+    <div class="top-bar-row">
+      <div class="top-left">
+        <button class="back-chip" onclick="goBack()" aria-label="Назад">←</button>
+        <div>
+          <div class="top-title">INFINITY Auto</div>
+          <div class="top-subtitle">Автосалон — выбор бренда</div>
+        </div>
+      </div>
+      <div class="info-box" id="balanceBox">Баланс: 0.00 ₽</div>
+    </div>
+  </header>
 
-<div class="dealer-title">INFINITY Auto</div>
+  <main class="screen-content">
+    <div class="section-caption">Автобренды</div>
 
-<div class="brands">
-
-    <!-- Existing brand cards (BMW, Mercedes, LADA) -->
-    <div class="brand-card" onclick="location.href='bmw.html'">
-        <img src="../assets/car/logos/bmw.png">
+    <div class="brand-grid">
+      <a href="bmw.html" class="brand-card">
+        <div class="brand-logo-wrap">
+          <img src="../assets/car/logos/bmw.png" alt="BMW">
+        </div>
         <div class="brand-name">BMW</div>
-    </div>
+      </a>
 
-    <div class="brand-card" onclick="location.href='mercedes.html'">
-        <img src="../assets/car/logos/mercedes.png">
+      <a href="mercedes.html" class="brand-card">
+        <div class="brand-logo-wrap">
+          <img src="../assets/car/logos/mercedes.png" alt="Mercedes-Benz">
+        </div>
         <div class="brand-name">Mercedes</div>
-    </div>
+      </a>
 
-    <div class="brand-card" onclick="location.href='lada.html'">
-        <img src="../assets/car/logos/lada.png">
-        <div class="brand-name">LADA</div>
-    </div>
-
-    <!-- New brand cards (Audi, Volkswagen, Toyota) -->
-    <div class="brand-card" onclick="location.href='audi.html'">
-        <img src="../assets/car/logos/audi.png">
+      <a href="audi.html" class="brand-card">
+        <div class="brand-logo-wrap">
+          <img src="../assets/car/logos/audi.png" alt="Audi">
+        </div>
         <div class="brand-name">Audi</div>
-    </div>
+      </a>
 
-    <div class="brand-card" onclick="location.href='volkswagen.html'">
-        <img src="../assets/car/logos/volkswagen.png">
+      <a href="volkswagen.html" class="brand-card">
+        <div class="brand-logo-wrap">
+          <img src="../assets/car/logos/volkswagen.png" alt="Volkswagen">
+        </div>
         <div class="brand-name">Volkswagen</div>
+      </a>
+
+      <a href="lada.html" class="brand-card">
+        <div class="brand-logo-wrap">
+          <img src="../assets/car/logos/lada.png" alt="LADA">
+        </div>
+        <div class="brand-name">LADA</div>
+      </a>
+
+      <a href="toyota.html" class="brand-card">
+        <div class="brand-logo-wrap">
+          <img src="../assets/car/logos/toyota.png" alt="Toyota">
+        </div>
+        <div class="brand-name">Toyota</div>
+      </a>
     </div>
 
-    <div class="brand-card" onclick="location.href='toyota.html'">
-        <img src="../assets/car/logos/toyota.png">
-        <div class="brand-name">Toyota</div>
-    </div>
+    <p class="help-text">
+      Выберите бренд, затем модель — покупка отправит машину в ваш гараж и она станет доступна для мини-игр и бизнеса.
+    </p>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="../fun.html" class="nav-item">
+      <img src="../assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="../business.html" class="nav-item">
+      <img src="../assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="../index.html" class="nav-item">
+      <img src="../assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="../profile.html" class="nav-item">
+      <img src="../assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="../settings.html" class="nav-item">
+      <img src="../assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
 
 </div>
 
 <script>
-function goBack() {
+  function goBack() {
     window.location.href = "../fun.html";
-}
+  }
 
-function readRub(key) {
-  return parseFloat(localStorage.getItem(key+'_rub')) || 0;
-}
+  const rates = {"₽": 1, "₸": 6.5, "$": 0.012, "€": 0.011};
 
-function fmt(num) {
-  return Number(num).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+  function readRub(key) {
+    return parseFloat(localStorage.getItem(key + "_rub")) || 0;
+  }
 
-function readSelectedCurrency() {
-  return localStorage.getItem("currency") || "₽";
-}
+  function fmt(num) {
+    return Number(num).toLocaleString("ru-RU", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
 
-const rates = {"₽": 1, "₸": 6.5, "$": 0.012, "€": 0.011};
+  function readSelectedCurrency() {
+    return localStorage.getItem("currency") || "₽";
+  }
 
-function updateBalanceDisplays() {
-  const balance = readRub("balance");
-  const currency = readSelectedCurrency();
-  const converted = balance * rates[currency];
-  document.getElementById("balanceBox").textContent = "Баланс: " + fmt(converted) + " " + currency;
-}
+  function updateBalanceDisplays() {
+    const balance = readRub("balance");
+    const currency = readSelectedCurrency();
+    const converted = balance * (rates[currency] || 1);
+    const el = document.getElementById("balanceBox");
+    if (!el) return;
+    el.textContent = "Баланс: " + fmt(converted) + " " + currency;
+  }
 
-updateBalanceDisplays();
+  updateBalanceDisplays();
 </script>
 
 </body>

@@ -1,415 +1,760 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<title>I.Deliv — Курьер</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<style>
-/* ===== copied/compatible styles from taxi + courier specifics ===== */
-:root{
-  --bg:#efefef;
-  --card:#fff;
-  --muted:#666;
-  --accent:#FFD200;
-  --text:#111;
-  --shadow: 0 10px 26px rgba(0,0,0,.18);
-}
-[data-theme="dark"]{
-  --bg:#0f0f11;
-  --card:#121214;
-  --muted:#bdbdbd;
-  --accent:#FFD200;
-  --text:#f7f7f7;
-  --shadow: 0 12px 36px rgba(0,0,0,.6);
-}
-[data-theme="dark"] .transport-card{
-  background:rgba(18,18,20,0.92);
-}
+  <meta charset="utf-8" />
+  <title>I.Deliv — Курьер</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --bg: #efefef;
+      --card: #ffffffee;
+      --muted: #666;
+      --accent: #FFD200;
+      --text: #111;
+      --shadow: 0 10px 26px rgba(0, 0, 0, .18);
+      --shell-bg: radial-gradient(circle at top, rgba(255,255,255,0.9) 0, transparent 55%),
+        linear-gradient(180deg, #f4f4f8, #d9d9e2);
+    }
+    [data-theme="dark"] {
+      --bg: #050816;
+      --card: rgba(12, 12, 18, 0.96);
+      --muted: #bdbdbd;
+      --accent: #FFD200;
+      --text: #f7f7f7;
+      --shadow: 0 12px 36px rgba(0, 0, 0, .6);
+      --shell-bg: radial-gradient(circle at top, rgba(255, 255, 255, 0.07) 0, transparent 55%),
+        linear-gradient(180deg, #14141c, #050509);
+    }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  overflow-x:hidden;
-}
+    * { box-sizing: border-box; }
 
-/* background images (exactly as in taxi) */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: url("moscow.png") center/cover no-repeat;
-  filter: blur(8px) brightness(0.75);
-  z-index: -1;
-  pointer-events: none;
-  transition: background 0.4s ease, filter 0.4s ease;
-}
-[data-theme="dark"] body::before {
-  background: url("moscow_night.png") center/cover no-repeat;
-  filter: blur(8px) brightness(0.45);
-}
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+    }
 
-/* HEADER (exactly like taxi) */
-.header{
-  position:fixed; top:0; left:0; right:0;
-  display:flex; align-items:center; justify-content:center;
-  padding:12px 18px; background:var(--card);
-  border-bottom:1px solid rgba(0,0,0,.06); z-index:1200;
-  box-shadow: var(--shadow);
-}
-.header img.logo{height:46px; display:block;}
-.header .left, .header .right{position:absolute; top:10px; display:flex; gap:10px; align-items:center;}
-.header .left{left:14px;}
-.header .right{right:14px;}
-.header-btn{
-  background:var(--card); border:1px solid rgba(0,0,0,.08);
-  padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;
-  box-shadow:0 6px 18px rgba(0,0,0,.08);
-  color:var(--text);
-}
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-/* rating badge */
-#ratingBox{
-  background:var(--card);
-  border-radius:10px;
-  padding:8px 10px;
-  font-size:14px;font-weight:700;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-  display:flex; flex-direction:column; align-items:flex-start;
-  gap:4px;
-  color:var(--text);
-}
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--shell-bg);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+      display: flex;
+      flex-direction: column;
+    }
 
-/* theme switch */
-.theme-toggle{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px; border-radius:14px; cursor:pointer;
-}
-.switch{
-  width:46px; height:26px; border-radius:16px; display:inline-block; position:relative;
-  background:#222; border:2px solid rgba(0,0,0,.08);
-}
-.switch .knob{
-  position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
-  background:#fff; transition:all .18s ease;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-}
-[data-theme="dark"] .switch{ background:var(--accent); border-color:rgba(0,0,0,.25); }
-[data-theme="dark"] .switch .knob{ left:22px; background:#111; }
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 26px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+      }
+    }
 
-/* TASK PANEL + LEVEL BOX (kept from taxi styling) */
-#taskPanel{
-  margin:86px auto 14px;
-  width:90%; max-width:720px;
-  background:var(--accent); color:#111;
-  padding:12px 16px; border-radius:14px; font-weight:700; text-align:center;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-}
-#levelBlock{
-  position: fixed;
-  top: 100px;
-  right: 18px;
-  width: 250px;
-  background: var(--card);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  padding: 10px 14px;
-  z-index: 3000;
-}
-#xpBarWrapper{width:100%;height:8px;background:rgba(0,0,0,.14);border-radius:8px;overflow:hidden;margin-top:6px;}
-#xpBar{height:100%;background:var(--accent);width:0%;transition:.25s;}
-#xpText{font-size:12px;color:var(--muted);text-align:right;}
+    /* ---- TOP BAR ---- */
+    .top-bar {
+      padding: 8px 16px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      z-index: 10;
+    }
 
-/* ORDERS LIST */
-/* ORDERS LIST */
-#goalBox {
-  position: fixed;
-  top: 100px;
-  left: 20px;
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
 
-  width: 230px;
-  padding: 14px 18px;
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-  background: #ffffffea;
-  backdrop-filter: blur(6px);
-  border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    .logo {
+      height: 32px;
+      display: block;
+    }
 
-  transition: width .25s ease, height .25s ease;
-  z-index: 9999;
-}
+    .top-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
 
-/* Развёрнутая панель */
-#goalBox.expanded {
-  width: 360px;
-}
+    .top-subtitle {
+      font-size: 12px;
+      opacity: 0.8;
+    }
 
-#orderList {
-  margin-top: 130px;
-  width: 720px;         /* фиксируем контейнер */
-  margin-left: auto;    /* центрируем */
-  margin-right: auto;   /* центрируем */
-}
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
+    /* rating box */
+    #ratingBox {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      color: var(--text);
+      min-width: 120px;
+    }
 
+    #orderCountView {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+    }
 
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
 
+    .header-btn {
+      border-radius: 10px;
+      padding: 7px 10px;
+      border: 1px solid rgba(0, 0, 0, .12);
+      background: var(--card);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+      white-space: nowrap;
+    }
 
-#orderList, #goalBox {
-  transition: margin-left .22s ease, width .22s ease, transform .22s ease;
-}
+    .header-btn.primary {
+      background: var(--accent);
+      color: #111;
+      border-color: transparent;
+    }
 
+    .header-btn-danger {
+      background: #ff6b6b;
+      color: #111;
+      border-color: transparent;
+    }
 
+    .header-btn.full-width {
+      width: 100%;
+      margin-top: 8px;
+      text-align: center;
+    }
 
+    .header-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, .3);
+    }
 
+    /* theme switch */
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 14px;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.22);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+      font-size: 11px;
+      font-weight: 700;
+    }
 
-/* Order card a bit taller as requested */
-.order-card{
-  width: 100%;
-  max-width: 720px;
-  background:var(--card);
-  border-radius:14px;
-  padding:18px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  cursor:pointer;
-  box-shadow:var(--shadow);
-  transition:transform .18s, box-shadow .18s;
-}
+    .switch {
+      width: 46px;
+      height: 26px;
+      border-radius: 16px;
+      display: inline-block;
+      position: relative;
+      background: #222;
+      border: 2px solid rgba(0, 0, 0, .2);
+    }
 
-.order-card:hover{ transform:translateY(-6px); box-shadow: 0 18px 50px rgba(0,0,0,.22); }
-.order-card .meta{opacity:.85; color:var(--muted); font-weight:600;}
-.take-btn{
-  background:var(--accent); border:none; padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:700;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-}
+    .switch .knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      transition: all .18s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+    }
 
-/* ACTIVE ORDER (bottom) - taxi style road, with static transport icon to the left */
-#activeOrderBox{
-  position:fixed; left:0; right:0; bottom:18px;
-  margin:0 auto; width:94%; max-width:960px;
-  background:var(--card); padding:14px; border-radius:14px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.28); display:none; z-index:1100;
-}
-#activeOrderBox .title{font-weight:800; margin-bottom:6px;}
-/* layout: icon + road */
-#activeRow{ display:flex; align-items:center; gap:12px; }
-#transportStatic { width:48px; height:48px; object-fit:contain; border-radius:8px; }
-/* road */
-#roadWrapper{ position:relative; flex:1; height:28px; background:rgba(0,0,0,.06); border-radius:999px; overflow:hidden;}
-#roadProgress{ height:100%; background:var(--accent); width:0%; transition: width .12s linear; border-radius:999px;}
-#currentKmText{ margin-top:8px; color:var(--muted); }
-#currentPayText{ margin-top:6px; font-weight:800; }
+    [data-theme="dark"] .switch {
+      background: var(--accent);
+      border-color: rgba(0, 0, 0, .25);
+    }
 
-/* MODALS & small utilities */
-.modal-back{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:2000; backdrop-filter: blur(4px); }
-.modal{ width:92%; max-width:520px; border-radius:18px; background:var(--card); padding:16px; box-shadow:var(--shadow); }
-.hidden{ display:none !important; }
+    [data-theme="dark"] .switch .knob {
+      left: 22px;
+      background: #111;
+    }
 
-/* SHIFT SUMMARY modal (copied look from taxi) */
-.summary-row{ padding:8px 0; border-bottom:1px solid rgba(0,0,0,.06); font-weight:600; color:var(--muted); }
+    /* ---- MAIN CONTENT ---- */
+    .screen-content {
+      flex: 1;
+      padding: 4px 16px 16px;
+      overflow-y: auto;
+    }
 
-/* animations */
-#orderCard, #activeOrderBox, .modal { animation: fadeInUp .28s ease forwards; opacity:0; transform:translateY(18px); }
-@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+    /* level card (баланс, уровень, XP) */
+    #levelBlock {
+      width: 100%;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
 
-/* responsive tweaks */
-@media(max-width:640px){
-  #levelBlock{ width:200px; right:8px; }
-  .order-card{ width:95% }
-  #activeOrderBox{ width:96% }
-}
+    #levelView {
+      font-size: 16px;
+      font-weight: 700;
+    }
 
-/* transport list styles + hover animation */
-.transport-card{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px; border-radius:12px;
-  background:var(--card);
-  cursor:pointer;
-  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
-  gap:12px;
-}
+    #balanceInLevel {
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 600;
+    }
 
-.transport-card:hover{
-  transform:translateY(-4px) scale(1.01);
-  box-shadow:0 14px 34px rgba(0,0,0,.18);
-}
-.transport-card img {
-  width:44px; height:44px; object-fit:contain; transition: transform .18s ease;
-}
-.transport-card:hover img { transform: scale(1.06); }
-.transport-card .transport-name{ font-weight:800; font-size:16px; }
-.transport-card .transport-locked{ color:#ff6f6f; font-size:13px; margin-top:6px; font-weight:700; }
+    #rentTimer {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
 
-/* selected */
-.transport-card.selected{
-  background:var(--accent);
-  color:#111;
-  box-shadow:0 14px 44px rgba(0,0,0,.25);
-}
-.transport-card .selected-badge{
-  font-weight:800; color:#111;
-}
+    #xpBarWrapper {
+      width: 100%;
+      height: 8px;
+      background: rgba(0, 0, 0, .18);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
 
-/* small utilities */
-.center{ text-align:center; }
-.money-fly {
-  position: fixed;
-  font-weight: 800;
-  font-size: 22px;
-  color: var(--accent);
-  pointer-events: none;
-  z-index: 5000; /* ← теперь поверх всех модалок и хедера */
-  animation: flyUp 1s ease forwards;
-}
-@keyframes flyUp {
-  0% { transform: translateY(0) scale(1); opacity: 1; }
-  80% { transform: translateY(-65px) scale(1.35); opacity: 1; }
-  100% { transform: translateY(-95px) scale(1); opacity: 0; }
-}
+    #xpBar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width .25s;
+      border-radius: 999px;
+    }
 
-/* small helper for muted small text */
-.small{ color:var(--muted); font-size:13px; }
+    #xpText {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+    }
 
+    /* goal box */
+    #goalBox {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .35);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: box-shadow .22s ease, transform .22s ease;
+    }
 
-/* === Ограничение высоты окна закрытия смены === */
-#shiftSummary .modal, #shiftSummaryContent {
-  max-height: 80vh !important;
-  overflow-y: auto !important;
-}
+    #goalBox.expanded {
+      box-shadow: 0 14px 32px rgba(0, 0, 0, .5);
+      transform: translateY(-2px);
+    }
 
-.hidden{
-  display:none !important;
-}
-#goalSmallText {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.35;
-}
+    #goalExpanded {
+      margin-top: 8px;
+    }
 
-#goalSmallText b {
-  font-size: 16px;
-  font-weight: 800;
-}
+    #goalSmallText {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+    }
 
-#goalDescription {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  opacity: 0.9;
-  line-height: 1.35;
-}
+    #goalSmallText b {
+      font-size: 15px;
+      font-weight: 800;
+    }
 
-</style>
+    #goalDescription {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0.9;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    #goalChoices > div {
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, .2);
+      background: rgba(0, 0, 0, 0.12);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    #goalChoices > div:active {
+      transform: translateY(1px);
+    }
+
+    /* orders */
+    #orderList {
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .order-card {
+      width: 100%;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 14px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .order-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, .25);
+    }
+
+    .order-card .meta {
+      opacity: .85;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .take-btn {
+      background: var(--accent);
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .22);
+      white-space: nowrap;
+    }
+
+    .take-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, .3);
+    }
+
+    /* active order at bottom (fixed over content, над нижним меню) */
+    #activeOrderBox {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
+      width: 100%;
+      max-width: 480px;
+      margin: 0;
+      background: var(--card);
+      padding: 12px 14px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .55);
+      display: none;
+      z-index: 900;
+    }
+
+    #activeOrderBox .title {
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    #activeRow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    #transportStatic {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+
+    #roadWrapper {
+      position: relative;
+      flex: 1;
+      height: 26px;
+      background: rgba(0, 0, 0, .12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #roadProgress {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width .12s linear;
+      border-radius: 999px;
+    }
+
+    #currentKmText {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    #currentPayText {
+      margin-top: 4px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    /* modals */
+    .modal-back {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal {
+      width: 92%;
+      max-width: 520px;
+      border-radius: 18px;
+      background: var(--card);
+      padding: 14px 14px 12px;
+      box-shadow: var(--shadow);
+      max-height: 82vh;
+      overflow-y: auto;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .summary-row {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, .08);
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* transport list */
+    .transport-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--card);
+      cursor: pointer;
+      gap: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .18);
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .transport-card:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, .25);
+    }
+
+    .transport-card img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      transition: transform .18s ease;
+    }
+
+    .transport-card:hover img {
+      transform: scale(1.06);
+    }
+
+    .transport-name {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .transport-locked {
+      color: #ff6f6f;
+      font-size: 13px;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .transport-card.selected {
+      background: var(--accent);
+      color: #111;
+      box-shadow: 0 14px 44px rgba(0, 0, 0, .25);
+    }
+
+    .selected-badge {
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    /* profile */
+    .profRow {
+      padding: 4px 0;
+      font-size: 13px;
+    }
+
+    .scroll-box {
+      max-height: 160px;
+      overflow-y: auto;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .money-fly {
+      position: fixed;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--accent);
+      pointer-events: none;
+      z-index: 5000;
+      animation: flyUp 1s ease forwards;
+    }
+
+    @keyframes flyUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      80% { transform: translateY(-65px) scale(1.35); opacity: 1; }
+      100% { transform: translateY(-95px) scale(1); opacity: 0; }
+    }
+
+    /* ---- bottom nav ---- */
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: env(safe-area-inset-bottom, 0px);
+      width: 100%;
+      max-width: 480px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: #dfe9ff;
+      text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
+    }
+
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item span {
+      opacity: 0.9;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
+  </style>
 </head>
 <body>
 
-<!-- HEADER copied from taxi (exact look) -->
-<div class="header">
-  <div class="left">
-    <div id="ratingBox">
-      <div id="ratingView">⭐ 0.00 (0)</div>
-      <div id="orderCountView" style="font-weight:600;color:var(--muted)">Доставок: 0</div>
+<div class="app-shell">
+
+  <!-- Верхняя панель -->
+  <header class="top-bar">
+    <div class="top-row">
+      <div class="top-left">
+        <img class="logo" src="./icons/infinity_go.png" alt="INFINITY GO">
+        <div>
+          <div class="top-title">I.Deliv — Курьер</div>
+          <div class="top-subtitle">Доставляй заказы и прокачивай уровень</div>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="theme-toggle" id="themeToggle" title="Тема">
+          <div style="font-size:11px;font-weight:700;">Тема</div>
+          <div class="switch" id="themeSwitch"><div class="knob"></div></div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <img class="logo" src="./icons/infinity_go.png" alt="INFINITY GO">
+    <div class="top-row">
+      <div id="ratingBox">
+        <div id="ratingView">⭐ 0.00 (0)</div>
+        <div id="orderCountView">Доставок: 0</div>
+      </div>
 
-  <div class="right">
-    <button id="openProfileBtn" class="header-btn">Профиль</button>
-    <button id="endShiftVisible" class="header-btn">Завершить смену</button>
-    <button id="exitVisible" class="header-btn">Выйти</button>
-
-    <div class="theme-toggle" id="themeToggle" title="Тема">
-      <div style="font-size:13px; font-weight:700;">Тема</div>
-      <div class="switch" id="themeSwitch"><div class="knob"></div></div>
+      <div class="header-actions">
+        <button id="openProfileBtn" class="header-btn">Профиль</button>
+        <button id="endShiftVisible" class="header-btn">Смена</button>
+        <button id="exitVisible" class="header-btn header-btn-danger">Выйти</button>
+      </div>
     </div>
+  </header>
+
+  <!-- Основной контент -->
+  <main class="screen-content">
+    <section id="levelBlock">
+      <div id="levelView">Новичок</div>
+      <div id="balanceInLevel">Баланс: 0 ₽</div>
+      <div id="rentTimer"></div>
+
+      <div id="xpBarWrapper">
+        <div id="xpBar"></div>
+      </div>
+      <div id="xpText">0 / 120 XP</div>
+    </section>
+
+    <section id="goalBox" class="collapsed">
+      <div id="goalSmallText">Текущая цель:<br><b>отсутствует</b></div>
+
+      <div id="goalExpanded" class="hidden">
+        <div id="goalDescription"></div>
+        <div id="goalChoices" class="hidden"></div>
+      </div>
+    </section>
+
+    <div id="orderList"></div>
+  </main>
+
+  <!-- Активный заказ -->
+  <div id="activeOrderBox">
+    <div class="title">Активный заказ</div>
+    <div id="currentRoute" style="font-weight:700;margin-bottom:8px;"></div>
+
+    <div id="activeRow">
+      <img id="transportStatic" src="./icons/case.png" alt="transport">
+      <div id="roadWrapper">
+        <div id="roadProgress"></div>
+      </div>
+    </div>
+
+    <div id="currentKmText"></div>
+    <div id="currentPayText"></div>
+    <div id="nextOrderBox" class="hidden" style="margin-top:10px;"></div>
   </div>
+
+  <!-- Нижняя навигация -->
+  <nav class="bottom-nav">
+    <a href="../fun.html" class="nav-item">
+      <img src="../assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="../business.html" class="nav-item">
+      <img src="../assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="../index.html" class="nav-item">
+      <img src="../assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="../profile.html" class="nav-item">
+      <img src="../assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="../settings.html" class="nav-item">
+      <img src="../assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
+
 </div>
 
-<!-- TASK & LEVEL -->
-<!-- GOAL PANEL -->
-<div id="goalBox" class="collapsed">
-  <div id="goalSmallText">Текущая цель:<br><b>отсутствует</b></div>
-
-  <div id="goalExpanded" class="hidden" style="margin-top:8px;">
-    <div id="goalDescription" style="margin-bottom:12px;"></div>
-    <div id="goalChoices" class="hidden"></div>
-  </div>
-</div>
-
-<div id="levelBlock">
-  <div id="levelView" style="font-weight:800; font-size:18px;">Новичок</div>
-
-  <div id="balanceInLevel" style="margin-top:4px; font-weight:700; font-size:16px;">
-    Баланс: 0 ₽
-  </div>
-  <div id="rentTimer" style="margin-top:4px; font-size:14px; color:var(--muted);"></div>
-
-  <div id="xpBarWrapper" style="margin-top:8px;">
-    <div id="xpBar"></div>
-  </div>
-  <div id="xpText">0 / 120 XP</div>
-</div>
-
-
-<!-- TRANSPORT SELECT (always visible until 'Выйти на линию') -->
+<!-- Модалки и т.п. остаются на всём экране -->
 <div id="transportModal" class="modal-back">
-  <div class="modal" style="max-width:520px;">
+  <div class="modal">
     <h2 style="margin-bottom:12px;">Выберите способ передвижения</h2>
     <div id="transportList"></div>
-    <button id="exitJobBtn" class="header-btn" style="width:100%;margin-top:8px;background:#ff6b6b;border-color:rgba(0,0,0,.08);">Выйти</button>
-    <button id="transportConfirm" class="header-btn" style="width:100%;margin-top:8px;background:var(--accent);">Выйти на линию</button>
+    <button id="exitJobBtn" class="header-btn header-btn-danger full-width">Выйти</button>
+    <button id="transportConfirm" class="header-btn primary full-width">Выйти на линию</button>
   </div>
 </div>
-<!-- МОДАЛ ВЫБОРА МОДЕЛЕЙ -->
+
 <div id="modelSelectModal" class="modal-back hidden">
-  <div class="modal" style="max-width:540px;">
+  <div class="modal">
     <h2 id="modelSelectTitle">Выбор модели</h2>
     <div id="modelList" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;"></div>
-    <div style="margin-top:14px;" class="center">
-      <button id="closeModelSelect" class="header-btn" style="background:var(--accent);width:100%;">Закрыть</button>
-    </div>
+    <button id="closeModelSelect" class="header-btn primary full-width">Закрыть</button>
   </div>
 </div>
 
-<!-- Orders list (only one order displayed at time by logic) -->
-<div id="orderList"></div>
-
-<!-- Active order (bottom) with taxi-like progress -->
-<div id="activeOrderBox">
-  <div class="title">Активный заказ</div>
-  <div id="currentRoute" style="font-weight:700;margin-bottom:8px;"></div>
-
-  <div id="activeRow">
-    <img id="transportStatic" src="./icons/case.png" alt="transport">
-    <div id="roadWrapper">
-      <div id="roadProgress"></div>
-    </div>
-  </div>
-
-  <div id="currentKmText" style="margin-top:8px;color:var(--muted)"></div>
-  <div id="currentPayText" style="margin-top:6px;font-weight:800;"></div>
-  <div id="nextOrderBox" class="hidden" style="margin-top:10px;"></div>
-</div>
-
-<!-- SHIFT SUMMARY modal -->
 <div id="shiftSummary" class="modal-back hidden">
   <div class="modal" id="shiftSummaryContent">
     <h2>Смена завершена</h2>
     <div id="summaryList"></div>
-    <h3 style="margin-top:12px">Итого на баланс: <span id="sumTotal">0</span> ₽</h3>
-    <div class="center" style="margin-top:12px;"><button class="header-btn" id="closeShiftBtn" style="background:var(--accent);">Ок</button></div>
+    <h3 style="margin-top:12px;">Итого на баланс: <span id="sumTotal">0</span> ₽</h3>
+    <button class="header-btn primary full-width" id="closeShiftBtn">Ок</button>
   </div>
 </div>
 
-<!-- PROFILE (copied structure from taxi profile, exact look) -->
 <div id="profileModal" class="modal-back hidden">
   <div class="modal" id="profileContent">
     <h2>Профиль курьера</h2>
@@ -420,31 +765,24 @@ body::before {
     <div class="profRow"><b>Баланс:</b> <span id="profMoney">0</span> ₽</div>
     <div class="profRow"><b>Пробег:</b> <span id="profKm">0</span> км</div>
 
-    <div style="margin-top:12px;">
-      <button id="openTransportFromProfile" class="header-btn" style="width:100%;margin-bottom:8px;">Выбрать транспорт</button>
-    </div>
+    <button id="openTransportFromProfile" class="header-btn full-width" style="margin-top:8px;">Выбрать транспорт</button>
 
     <h3 style="margin-top:12px;">Последние заказы доставки</h3>
-    <div id="profHistory" style="max-height:200px; overflow-y:auto; margin-top:8px;"></div>
+    <div id="profHistory" class="scroll-box"></div>
 
     <h3 style="margin-top:12px;">Отзывы клиентов</h3>
-    <div id="profReviews" style="max-height:160px; overflow-y:auto; margin-top:8px;"></div>
+    <div id="profReviews" class="scroll-box"></div>
 
-    <div style="margin-top:12px;" class="center">
-      <button id="closeProfile" class="header-btn" style="background:var(--accent);">Закрыть</button>
-    </div>
+    <button id="closeProfile" class="header-btn primary full-width" style="margin-top:10px;">Закрыть</button>
   </div>
 </div>
 
 <audio id="orderSound" src="yandex.mp3"></audio>
 
 <script>
-/* -------------------------
-  State + persistence
--------------------------*/
-  // helpers compatible with main game: read/write amounts in RUB under key+'_rub'
-  function readRub(k){ return parseFloat(localStorage.getItem(k+'_rub')) || 0; }
-  function writeRub(k, v){ localStorage.setItem(k+'_rub', v); }
+// helpers compatible with main game: read/write amounts in RUB under key+'_rub'
+function readRub(k){ return parseFloat(localStorage.getItem(k+'_rub')) || 0; }
+function writeRub(k, v){ localStorage.setItem(k+'_rub', v); }
 
 let balance = readRub('balance') || 0;
 let ratingScore = +localStorage.getItem('courier_ratingScore') || 0;
@@ -454,16 +792,14 @@ let level = +localStorage.getItem('courier_level') || 1;
 let xp = +localStorage.getItem('courier_xp') || 0;
 let activeGoal = JSON.parse(localStorage.getItem('activeGoal') || 'null');
 
-
 const titles = ["Новичок","Профи","Эксперт","Топ-курьер"];
 const xpNeedArr = [210,1470,6000,999999];
 function xpNeed(){ return xpNeedArr[Math.min(level-1, xpNeedArr.length-1)]; }
 
 /* speeds */
-const speed = { walk:3, bike:1.8, moto:1.8, car:0.8 }; // bike and moto same coef as вы просили
+const speed = { walk:3, bike:1.8, moto:1.8, car:0.8 };
 
-/* transports available (levels: walk=1, others unlock at 2) */
-/* NOTE: icons filenames are taken from ./icons folder as you requested */
+/* transports */
 const transports = [
   {type:"walk", icon:"case.png", name:"Пешком", req:1},
   {type:"bike", icon:"yandexbike.png", name:"Электровело", req:2},
@@ -471,7 +807,7 @@ const transports = [
   {type:"car", icon:"auto.png", name:"Авто", req:2}
 ];
 
-/* ===== МОДЕЛИ ТРАНСПОРТА (Только аренда — покупка убрана) ===== */
+/* МОДЕЛИ ТРАНСПОРТА (только аренда) */
 const transportModels = {
   bike: [
     {name:"Yandex E-Bike", rent:700, mul:1.10, icon:"bike_yandex.png"},
@@ -490,19 +826,14 @@ const transportModels = {
   ]
 };
 
-/* Хранилище арендованных моделей: структура { bike: {0: expires, 1: expires}, moto: {...}, car: {...} } */
 let rentedModels = JSON.parse(localStorage.getItem('rentedModels') || '{}');
-
-/* Активная модель (если есть) — {type: 'bike', index: 1, expires: ...? } или null */
 let activeModel = JSON.parse(localStorage.getItem('activeModel') || 'null');
 
-/* Переменные игры */
-let transport = null;            // active transport type (used during delivery)
-let selectedTransport = null;    // selection in modal
-let orderActive = false;         // only one order at a time
-let current = null;              // current order object
+let transport = null;
+let selectedTransport = null;
+let orderActive = false;
+let current = null;
 
-/* UI update helpers */
 function saveAll(){
   writeRub('balance', balance);
   localStorage.setItem('courier_ratingScore', ratingScore);
@@ -513,25 +844,14 @@ function saveAll(){
   localStorage.setItem('rentedModels', JSON.stringify(rentedModels));
   localStorage.setItem('activeModel', JSON.stringify(activeModel));
 }
-function updateUI(){
-  const avg = ratingCount ? (ratingScore / ratingCount).toFixed(2) : '0.00';
-  document.getElementById('ratingView').textContent = `⭐ ${avg} (${ratingCount})`;
-  document.getElementById('orderCountView').textContent = 'Доставок: ' + (localStorage.getItem('completed_orders')||completed);
-  document.getElementById('levelView').textContent = titles[Math.min(level-1, titles.length-1)];
-  document.getElementById('xpText').textContent = `${xp} / ${xpNeed()} ⚡`;
-  document.getElementById('balanceInLevel').textContent = "Баланс: " + balance + " ₽";
-  // update rent timer immediately
-  updateRentTimer();
-  saveAll();
-  updateGoalUI();
-}
-updateUI();
+
 function updateGoalUI(){
   const small = document.getElementById("goalSmallText");
   const desc = document.getElementById("goalDescription");
 
   if(!activeGoal){
     small.innerHTML = "Текущая цель:<br><b>отсутствует</b>";
+    if (desc) desc.textContent = "";
     return;
   }
 
@@ -543,20 +863,68 @@ function updateGoalUI(){
     desc.innerHTML = `Преодолейте <b>${activeGoal.need} км</b>, чтобы получить <b>${activeGoal.reward} ₽</b>.`;
   }
 }
+
+function updateRentTimer(){
+  let displayText = "";
+  if(activeModel && activeModel.expires && activeModel.expires > Date.now()){
+    let left = activeModel.expires - Date.now();
+    let m = Math.floor(left / 60000);
+    let s = Math.floor((left % 60000) / 1000);
+    displayText = `Аренда (ваш транспорт): ${m}:${s<10?"0":""}${s}`;
+  } else {
+    let soon = null;
+    Object.keys(rentedModels).forEach(type=>{
+      Object.keys(rentedModels[type]).forEach(idx=>{
+        const ex = rentedModels[type][idx];
+        if(ex > Date.now()){
+          if(!soon || ex < soon.expires) soon = {type, idx, expires: ex};
+        }
+      });
+    });
+    if(soon){
+      let left = soon.expires - Date.now();
+      let m = Math.floor(left / 60000);
+      let s = Math.floor((left % 60000) / 1000);
+      displayText = `Аренда: ${m}:${s<10?"0":""}${s} (${soon.type} ${soon.idx})`;
+    }
+  }
+  const el = document.getElementById("rentTimer");
+  if (el) el.textContent = displayText;
+}
+
+function updateUI(){
+  const avg = ratingCount ? (ratingScore / ratingCount).toFixed(2) : '0.00';
+  document.getElementById('ratingView').textContent = `⭐ ${avg} (${ratingCount})`;
+  document.getElementById('orderCountView').textContent = 'Доставок: ' + (localStorage.getItem('completed_orders')||completed);
+  document.getElementById('levelView').textContent = titles[Math.min(level-1, titles.length-1)];
+  document.getElementById('xpText').textContent = `${xp} / ${xpNeed()} ⚡`;
+  document.getElementById('balanceInLevel').textContent = "Баланс: " + balance + " ₽";
+
+  const xpBar = document.getElementById('xpBar');
+  if (xpBar) {
+    const pct = Math.max(0, Math.min(100, xp / xpNeed() * 100));
+    xpBar.style.width = pct + '%';
+  }
+
+  updateRentTimer();
+  saveAll();
+  updateGoalUI();
+}
+updateUI();
+setInterval(updateRentTimer, 1000);
+
 document.getElementById("goalBox").onclick = ()=>{
   const box = document.getElementById("goalBox");
   const expanded = document.getElementById("goalExpanded");
   const choices = document.getElementById("goalChoices");
 
-  // если цель уже выбрана — просто показать текст цели, НО не выводить выбор снова
   if(activeGoal){
-    choices.classList.add("hidden"); // скрываем варианты
+    choices.classList.add("hidden");
     expanded.classList.toggle("hidden");
     box.classList.toggle("expanded");
     return;
   }
 
-  // если цели нет — показываем выбор
   expanded.classList.remove("hidden");
   box.classList.add("expanded");
   choices.classList.remove("hidden");
@@ -564,11 +932,6 @@ document.getElementById("goalBox").onclick = ()=>{
 
   randomGoals().forEach(g=>{
     const div = document.createElement("div");
-    div.style.marginBottom = "8px";
-    div.style.padding = "8px";
-    div.style.border = "1px solid rgba(0,0,0,.15)";
-    div.style.borderRadius = "10px";
-    div.style.cursor = "pointer";
     div.innerHTML = (g.type==="orders")
       ? `${g.need} заказов (+${g.reward} ₽)`
       : `Преодолей ${g.need} км (+${g.reward} ₽)`;
@@ -585,28 +948,31 @@ document.getElementById("goalBox").onclick = ()=>{
   });
 };
 
-
-/* Play sound when new order arrives (only on appear) */
 function playSound(){
   const a = document.getElementById('orderSound');
-  if(a){ try{ a.currentTime = 0; a.play().catch(()=>{}); }catch(e){} }
+  if(a){
+    try{
+      a.currentTime = 0;
+      a.play().catch(()=>{});
+    }catch(e){}
+  }
 }
 
-/* THEME handling (persist) */
+/* THEME handling */
 (function(){
-  const saved = localStorage.getItem('theme') || 'light';
+  const saved = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light');
-  if(saved === 'dark') document.querySelector('.switch .knob').style.left='22px';
+  const knob = document.querySelector('.switch .knob');
+  if(saved === 'dark') knob.style.left='22px';
   document.getElementById('themeToggle').onclick = () => {
     const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', cur);
     localStorage.setItem('theme', cur);
-    if(cur === 'dark') document.querySelector('.switch .knob').style.left='22px';
-    else document.querySelector('.switch .knob').style.left='2px';
+    knob.style.left = (cur === 'dark') ? '22px' : '2px';
   };
 })();
 
-/* TRANSPORT DRAW + selection (uses images from ./icons) */
+/* TRANSPORT DRAW */
 function drawTransport(){
   const box = document.getElementById('transportList');
   box.innerHTML = '';
@@ -627,13 +993,12 @@ function drawTransport(){
 
     const rightHTML = selectedTransport === t.type
       ? `<div class="selected-badge">Выбрано</div>`
-      : `<div style="color:var(--muted);font-weight:700">${locked ? '' : ''}</div>`;
+      : `<div style="color:var(--muted);font-weight:700"></div>`;
 
     card.innerHTML = leftHTML + rightHTML;
 
     if(!locked){
       card.onclick = ()=> {
-        // Пешком всегда можно выбрать
         selectedTransport = t.type;
         drawTransport();
       };
@@ -649,13 +1014,12 @@ function drawTransport(){
 }
 drawTransport();
 
-/* Модели: рисуем доступные только арендуемые модели (покупки нет) */
+/* MODELS */
 function drawModels(type){
   document.getElementById('modelSelectTitle').textContent = "Выбор модели — " + (type || '').toUpperCase();
   const box = document.getElementById('modelList');
   box.innerHTML = '';
 
-  // special case: if type is walk — no models: just use walk
   if(type === 'walk'){
     const div = document.createElement('div');
     div.className = 'transport-card';
@@ -675,7 +1039,7 @@ function drawModels(type){
         <img src="./icons/${m.icon}" style="width:48px;height:48px;" alt="${m.name}">
         <div>
           <div class="transport-name">${m.name}</div>
-          </div>
+        </div>
       </div>
       <div>
         ${
@@ -689,465 +1053,477 @@ function drawModels(type){
   });
 }
 
-/* transport confirm button — открывает модальное моделей для выбранного транспорта,
-   но если выбран walk — сразу выходим на линию */
-document.getElementById('transportConfirm').onclick = ()=>{
-  if(!selectedTransport){
-    // gentle hint
+document.getElementById('transportConfirm').onclick = () => {
+  if (!selectedTransport) {
+    // аккуратный тост "Выберите транспорт"
     const d = document.createElement('div');
     d.textContent = 'Выберите транспорт';
-    d.style.position='fixed'; d.style.bottom='120px'; d.style.left='50%'; d.style.transform='translateX(-50%)';
-    d.style.background='var(--card)'; d.style.padding='10px 14px'; d.style.borderRadius='12px'; d.style.boxShadow='0 8px 26px rgba(0,0,0,.18)';
-    document.body.appendChild(d); setTimeout(()=>d.remove(),1400);
+    d.style.position = 'fixed';
+    d.style.bottom = '120px';
+    d.style.left = '50%';
+    d.style.transform = 'translateX(-50%)';
+    d.style.background = 'var(--card)';
+    d.style.padding = '10px 14px';
+    d.style.borderRadius = '12px';
+    d.style.boxShadow = '0 8px 26px rgba(0,0,0,.18)';
+    d.style.fontSize = '13px';
+    d.style.fontWeight = '600';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1400);
     return;
   }
 
-  // if walk selected — go directly on shift as walk (no models)
-  if(selectedTransport === 'walk'){
-    transport = 'walk';
-    activeModel = null; // no model for walk
-    localStorage.removeItem('activeModel');
-    setTransportStaticImage('walk');
-    document.getElementById('transportModal').classList.add('hidden');
-    setTimeout(()=> newOrder(), 160);
-    updateUI();
+  // пешком — сразу на линию, без моделей
+  if (selectedTransport === 'walk') {
+    useWalk();
     return;
   }
 
-  // otherwise open model selection modal for that transport type
+  // остальное — выбираем модель транспорта
   transport = selectedTransport;
   drawModels(transport);
   document.getElementById('modelSelectModal').classList.remove('hidden');
 };
 
 /* rent a model (30 min) */
-function rentModel(type,i){
+function rentModel(type, i) {
   const m = transportModels[type][i];
-  if(balance < m.rent){
-    const d = document.createElement('div'); d.textContent='Недостаточно средств'; d.style.position='fixed'; d.style.bottom='120px'; d.style.left='50%'; d.style.transform='translateX(-50%)'; d.style.background='var(--card)'; d.style.padding='10px 14px'; d.style.borderRadius='12px'; d.style.boxShadow='0 8px 26px rgba(0,0,0,.18)'; document.body.appendChild(d); setTimeout(()=>d.remove(),1400);
+  if (!m) return;
+
+  if (balance < m.rent) {
+    const d = document.createElement('div');
+    d.textContent = 'Недостаточно средств';
+    d.style.position = 'fixed';
+    d.style.bottom = '120px';
+    d.style.left = '50%';
+    d.style.transform = 'translateX(-50%)';
+    d.style.background = 'var(--card)';
+    d.style.padding = '10px 14px';
+    d.style.borderRadius = '12px';
+    d.style.boxShadow = '0 8px 26px rgba(0,0,0,.18)';
+    d.style.fontSize = '13px';
+    d.style.fontWeight = '600';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1400);
     return;
   }
+
   balance -= m.rent;
   rentedModels[type] = rentedModels[type] || {};
-  rentedModels[type][i] = Date.now() + 30*60*1000; // 30 мин
+  rentedModels[type][i] = Date.now() + 30 * 60 * 1000; // 30 мин
   saveAll();
   drawModels(type);
   updateUI();
 }
 
-/* use a model (after renting) */
-function useModel(type,i){
-  // check rent expiry
-  const expires = (rentedModels[type] && rentedModels[type][i]) || 0;
-  if(expires <= Date.now()){
-    const d = document.createElement('div'); d.textContent='Аренда истекла'; d.style.position='fixed'; d.style.bottom='120px'; d.style.left='50%'; d.style.transform='translateX(-50%)'; d.style.background='var(--card)'; d.style.padding='10px 14px'; d.style.borderRadius='12px'; d.style.boxShadow='0 8px 26px rgba(0,0,0,.18)'; document.body.appendChild(d); setTimeout(()=>d.remove(),1400);
-    drawModels(type);
+/* использование уже арендованной модели */
+function useModel(type, i) {
+  const expires = rentedModels[type] && rentedModels[type][i];
+  if (!expires || expires <= Date.now()) {
+    const d = document.createElement('div');
+    d.textContent = 'Аренда истекла, нужно продлить';
+    d.style.position = 'fixed';
+    d.style.bottom = '120px';
+    d.style.left = '50%';
+    d.style.transform = 'translateX(-50%)';
+    d.style.background = 'var(--card)';
+    d.style.padding = '10px 14px';
+    d.style.borderRadius = '12px';
+    d.style.boxShadow = '0 8px 26px rgba(0,0,0,.18)';
+    d.style.fontSize = '13px';
+    d.style.fontWeight = '600';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1400);
     return;
   }
-  activeModel = {type, index: i, expires};
+
+  activeModel = { type, index: i, expires };
   localStorage.setItem('activeModel', JSON.stringify(activeModel));
   transport = type;
   setTransportStaticImage(type, i);
-  // close only model select, keep transportModal hidden behavior but ensure UI updated
+
+  // закрываем выбор модели и стартовый модал транспорта
   document.getElementById('modelSelectModal').classList.add('hidden');
   document.getElementById('transportModal').classList.add('hidden');
-  drawModels(type); // update model buttons to reflect active state
+
+  drawModels(type);
   updateUI();
-  setTimeout(()=> newOrder(), 160);
+  setTimeout(() => newOrder(), 160);
 }
 
-/* use walk quick helper */
-function useWalk(){
+/* пешком — без моделей */
+function useWalk() {
   transport = 'walk';
   activeModel = null;
   localStorage.removeItem('activeModel');
   setTransportStaticImage('walk');
+
   document.getElementById('modelSelectModal').classList.add('hidden');
   document.getElementById('transportModal').classList.add('hidden');
+
   updateUI();
-  setTimeout(()=> newOrder(), 160);
+  setTimeout(() => newOrder(), 160);
 }
 
-/* ORDER generation (only one at time) */
-const froms=[
-  "ПВЗ Ozon, Сущёвский Вал 5",
-  "ПВЗ WB, Павелецкая пл. 2",
-  "KFC, Тверская 9",
-  "Аптека 36.6, Цветной б-р 13",
-  "McDonald's, Курская пл. 1"
+/* картинка транспорта в активном заказе */
+function setTransportStaticImage(type, modelIndex) {
+  const el = document.getElementById('transportStatic');
+  if (!el) return;
+
+  const baseMap = {
+    walk: './icons/case.png',
+    bike: './icons/yandexbike.png',
+    moto: './icons/scooter.png',
+    car: './icons/auto.png'
+  };
+
+  let src = baseMap[type] || baseMap.walk;
+
+  if (typeof modelIndex === 'number') {
+    const list = transportModels[type];
+    if (list && list[modelIndex]) {
+      src = './icons/' + list[modelIndex].icon;
+    }
+  } else if (activeModel && activeModel.type === type) {
+    const list = transportModels[type];
+    if (list && typeof activeModel.index === 'number' && list[activeModel.index]) {
+      src = './icons/' + list[activeModel.index].icon;
+    }
+  }
+
+  el.src = src;
+}
+
+/* возможные цели (квесты) */
+function randomGoals() {
+  return [
+    { type: 'orders', need: 25 + Math.floor(Math.random() * 20), reward: 2000 + Math.floor(Math.random() * 3000), progress: 0 },
+    { type: 'orders', need: 10 + Math.floor(Math.random() * 15), reward: 1000 + Math.floor(Math.random() * 2000), progress: 0 },
+    { type: 'distance', need: 50 + Math.floor(Math.random() * 100), reward: 2500 + Math.floor(Math.random() * 3500), progress: 0 }
+  ];
+}
+
+/* точки "откуда" и "куда" */
+const froms = [
+  'ПВЗ Ozon, Сущёвский Вал 5',
+  'ПВЗ WB, Павелецкая пл. 2',
+  'KFC, Тверская 9',
+  'Аптека 36.6, Цветной б-р 13',
+  'McDonalds, Курская пл. 1'
 ];
 
-const tos=[
-  "ул. Бауманская, 27",
-  "ул. Арбат, 14/1",
-  "ул. Сретенка, 22",
-  "ул. Покровка, 45",
-  "пр-т Мира, 68"
+const tos = [
+  'ул. Бауманская, 27',
+  'ул. Арбат, 14/1',
+  'ул. Сретенка, 22',
+  'ул. Покровка, 45',
+  'пр-т Мира, 68'
 ];
 
-function genOrder(){
-  const A = froms[Math.floor(Math.random()*froms.length)];
-  const B = tos[Math.floor(Math.random()*tos.length)];
+/* генерация заказа по текущему транспорту */
+function genOrder() {
+  const A = froms[Math.floor(Math.random() * froms.length)];
+  const B = tos[Math.floor(Math.random() * tos.length)];
 
-  // диапазоны для расстояния по транспорту
-  let distMin = 0.3, distMax = 3; // пеший
-  if (transport === "bike" || transport === "moto"){ distMin = 1; distMax = 7; }
-  if (transport === "moto"){ distMin = 1.5; distMax = 9; } // moto same coef but can have larger max in second line (we keep min override)
-  if (transport === "car"){ distMin = 2.5; distMax = 15; }
+  // диапазоны по дистанции
+  let distMin = 0.3, distMax = 3; // пешком
+  if (transport === 'bike' || transport === 'moto') { distMin = 1; distMax = 7; }
+  if (transport === 'moto') { distMin = 1.5; distMax = 9; }
+  if (transport === 'car') { distMin = 2.5; distMax = 15; }
 
-  const dist = +(distMin + Math.random()*(distMax - distMin)).toFixed(1);
+  const dist = +(distMin + Math.random() * (distMax - distMin)).toFixed(1);
 
-  // коэффициенты оплаты (базовый)
+  // коэффициент оплаты
   let coef = 1;
-  if (transport === "bike") coef = 1.2;
-  if (transport === "moto") coef = 1.2;
-  if (transport === "car") coef = 1.4;
+  if (transport === 'bike') coef = 1.2;
+  if (transport === 'moto') coef = 1.2;
+  if (transport === 'car') coef = 1.4;
 
-  // базовая цена * расстояние * коэффициент
   let pay = dist * 50 * coef;
-  // применяем множитель активной модели (если есть и аренда активна)
-  if(activeModel && activeModel.type && typeof activeModel.index !== 'undefined'){
+
+  // если модель арендована и аренда ещё активна — в оригинале множитель влияет только на скорость,
+  // оплату не трогаем, но проверяем, что аренда не истекла
+  if (activeModel && activeModel.type && typeof activeModel.index !== 'undefined') {
     const tm = transportModels[activeModel.type][activeModel.index];
-    if(tm && (rentedModels[activeModel.type] && rentedModels[activeModel.type][activeModel.index] > Date.now())){
-      // pay multiplier removed; only affects speed
-    } else {
-      // если аренда истекла — сбросим activeModel
+    if (!(tm && rentedModels[activeModel.type] && rentedModels[activeModel.type][activeModel.index] > Date.now())) {
+      // аренда кончилась
       activeModel = null;
       localStorage.removeItem('activeModel');
     }
   }
 
-  // округляем к целым ₽, но не "делаем красивые" — как просили
   pay = Math.round(pay);
-
-  // XP всегда +3
   const xpGain = 3;
 
-  return {A,B,dist,pay,xpGain, time: Date.now()};
+  return { A, B, dist, pay, xpGain, time: Date.now() };
 }
 
-/* show single order card (bigger) */
-function newOrder(){
-  // if currently delivering or order exists, skip (only one allowed)
-  if(orderActive || document.getElementById('activeOrderBox').style.display === 'block') return;
+/* один заказ в списке */
+function newOrder() {
+  // если уже в доставке — игнор
+  const activeBox = document.getElementById('activeOrderBox');
+  if (orderActive || (activeBox && activeBox.style.display === 'block')) return;
+  if (!transport) return; // без транспорта не работаем
+
   current = genOrder();
   const box = document.getElementById('orderList');
+  if (!box) return;
+
   box.innerHTML = '';
   const card = document.createElement('div');
   card.className = 'order-card';
   card.innerHTML = `
     <div style="flex:1;">
-      <div style="font-size:20px;font-weight:800">${current.A}</div>
-      <div style="font-size:20px;font-weight:800;margin-top:6px">→ ${current.B}</div>
-      <div style="color:var(--muted);margin-top:8px;font-weight:600">${current.dist} км • ${current.pay} ₽ • +${current.xpGain}⚡</div>
+      <div style="font-size:18px;font-weight:800">${current.A}</div>
+      <div style="font-size:18px;font-weight:800;margin-top:6px">→ ${current.B}</div>
+      <div class="meta" style="margin-top:8px;">${current.dist} км • ${current.pay} ₽ • +${current.xpGain}⚡</div>
     </div>
-    <div style="margin-left:16px">
+    <div style="margin-left:14px;">
       <button class="take-btn" id="takeBtn">Взять</button>
     </div>
   `;
   box.appendChild(card);
-  playSound(); // sound on appear
 
-  document.getElementById('takeBtn').onclick = ()=> {
-    // start delivery only if transport chosen
-    if(!transport){
-      const d = document.createElement('div'); d.textContent='Выберите транспорт'; d.style.position='fixed'; d.style.bottom='120px'; d.style.left='50%'; d.style.transform='translateX(-50%)'; d.style.background='var(--card)'; d.style.padding='10px 14px'; d.style.borderRadius='12px'; d.style.boxShadow='0 8px 26px rgba(0,0,0,.18)'; document.body.appendChild(d); setTimeout(()=>d.remove(),1400);
-      document.getElementById('transportModal').classList.remove('hidden');
-      return;
-    }
-    box.innerHTML = ''; // remove order card from list (only one at time)
-    startDelivery();
-  };
-  orderActive = true;
-}
+  playSound();
 
-/* Set static transport image to left of road */
-function setTransportStaticImage(type, index){
-  const map = {
-    walk: './icons/walker.png',
-    bike: './icons/yandexbike.png',
-    moto: './icons/scooter.png',
-    car: './icons/auto.png'
-  };
-  // if activeModel with specific icon, prefer it (if available)
-  if(index !== undefined && type && transportModels[type] && transportModels[type][index]){
-    const icon = transportModels[type][index].icon;
-    if(icon) map[type] = './icons/' + icon;
+  const btn = document.getElementById('takeBtn');
+  if (btn) {
+    btn.onclick = () => {
+      if (orderActive || !current) return;
+      orderActive = true;
+      startDelivery();
+    };
   }
-  const el = document.getElementById('transportStatic');
-  if(el && map[type]) el.src = map[type];
 }
 
-/* DELIVERY: progress with roadProgress only (no moving icon) */
+/* анимация дороги */
 let animHandle = null;
-function startDelivery(){
-  // ensure static image matches selected transport (if model active, show its icon)
-  if(activeModel) setTransportStaticImage(activeModel.type, activeModel.index);
-  else setTransportStaticImage(transport);
 
-  document.getElementById('activeOrderBox').style.display = 'block';
+function startDelivery() {
+  if (!current) return;
+
+  if (animHandle) cancelAnimationFrame(animHandle);
+
+  if (activeModel) {
+    setTransportStaticImage(activeModel.type, activeModel.index);
+  } else {
+    setTransportStaticImage(transport);
+  }
+
+  const activeBox = document.getElementById('activeOrderBox');
+  activeBox.style.display = 'block';
+
   document.getElementById('currentRoute').textContent = current.A + ' → ' + current.B;
   document.getElementById('currentPayText').textContent = current.pay + ' ₽';
   document.getElementById('currentKmText').textContent = `Прогресс: 0 / ${current.dist} км`;
   document.getElementById('roadProgress').style.width = '0%';
 
-  // compute duration using speed mapping; ensure minimum time
   const sp = speed[transport] || 3;
-  const duration = Math.max(2200, Math.round(current.dist * sp * 1000)); // ms
+  const duration = Math.max(2200, Math.round(current.dist * sp * 1000));
 
   const start = performance.now();
-  function frame(now){
+  function frame(now) {
     const p = Math.min((now - start) / duration, 1);
-    const pct = p * 100;
-    document.getElementById('roadProgress').style.width = pct + '%';
-    document.getElementById('currentKmText').textContent = `Прогресс: ${ (current.dist * p).toFixed(1) } / ${current.dist} км`;
-    if(p < 1) animHandle = requestAnimationFrame(frame);
-    else {
-      cancelAnimationFrame(animHandle);
+    document.getElementById('roadProgress').style.width = (p * 100).toFixed(1) + '%';
+    document.getElementById('currentKmText').textContent =
+      `Прогресс: ${(current.dist * p).toFixed(1)} / ${current.dist} км`;
+
+    if (p < 1) {
+      animHandle = requestAnimationFrame(frame);
+    } else {
+      animHandle = null;
       finishDelivery();
     }
   }
+
   animHandle = requestAnimationFrame(frame);
 }
 
-function showMoneyFly(amount){
-  const el = document.createElement('div');
-  el.className = 'money-fly';
-  el.textContent = `+${amount} ₽`;
-
-  const lb = document.getElementById('levelBlock');
-  const rect = lb.getBoundingClientRect();
-
-  // вертикальная корректировка, чтобы не улетало под хедер
-  const yOffset = window.scrollY + rect.top - 10;
-  const xOffset = rect.left + 20;
-
-  el.style.left = xOffset + 'px';
-  el.style.top = yOffset + 'px';
-
-  document.body.appendChild(el);
-  setTimeout(()=> el.remove(), 1200);
-}
-function randomGoals(){
-  return [
-    {type:"orders", need:25 + Math.floor(Math.random()*20), reward:2000 + Math.floor(Math.random()*3000), progress:0},
-    {type:"orders", need:10 + Math.floor(Math.random()*15), reward:1000 + Math.floor(Math.random()*2000), progress:0},
-    {type:"distance", need:50 + Math.floor(Math.random()*100), reward:2500 + Math.floor(Math.random()*3500), progress:0}
-  ];
+/* +₽ анимация */
+function showMoneyFly(amount) {
+  const d = document.createElement('div');
+  d.className = 'money-fly';
+  d.textContent = `+${amount} ₽`;
+  d.style.left = '50%';
+  d.style.top = '55%';
+  d.style.transform = 'translateX(-50%)';
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 1000);
 }
 
-/* FINISH delivery: award and prepare next order */
-function finishDelivery(){
-  // smooth hide like taxi
+/* завершение заказа */
+function finishDelivery() {
   const active = document.getElementById('activeOrderBox');
-  active.style.opacity = 0;
-  setTimeout(()=>{
+  active.style.opacity = '0';
+
+  setTimeout(() => {
     active.style.display = 'none';
-    active.style.opacity = 1;
-    // record stats
+    active.style.opacity = '1';
+
     completed++;
     balance += current.pay;
     showMoneyFly(current.pay);
-    if(activeGoal){
-  if(activeGoal.type === "orders"){
-    activeGoal.progress++;
-  } else if(activeGoal.type === "distance"){
-    activeGoal.progress += current.dist;
-  }
 
-  if(activeGoal.progress >= activeGoal.need){
-    balance += activeGoal.reward;
-    showMoneyFly(activeGoal.reward);
-    activeGoal = null;
-    localStorage.removeItem('activeGoal');
-  } else {
-    localStorage.setItem('activeGoal', JSON.stringify(activeGoal));
-  }
-  updateGoalUI();
-}
+    // цель
+    if (activeGoal) {
+      if (activeGoal.type === 'orders') {
+        activeGoal.progress++;
+      } else if (activeGoal.type === 'distance') {
+        activeGoal.progress += current.dist;
+      }
 
-    // добавляем пробег
-    let totalKm = parseFloat(localStorage.getItem('total_km')||'0');
+      if (activeGoal.progress >= activeGoal.need) {
+        balance += activeGoal.reward;
+        showMoneyFly(activeGoal.reward);
+        activeGoal = null;
+        localStorage.removeItem('activeGoal');
+      } else {
+        localStorage.setItem('activeGoal', JSON.stringify(activeGoal));
+      }
+      updateGoalUI();
+    }
+
+    // пробег
+    let totalKm = parseFloat(localStorage.getItem('total_km') || '0');
     totalKm += current.dist;
     localStorage.setItem('total_km', totalKm.toFixed(2));
+
+    // XP и уровень
     xp += current.xpGain;
-    // level up
-    while(xp >= xpNeed()){
+    while (xp >= xpNeed()) {
       xp -= xpNeed();
       level++;
     }
-    // rating increment (simple random)
+
+    // рейтинг
     const addStars = Math.random() < 0.85 ? 5 : 4;
-    ratingScore += addStars; ratingCount++;
+    ratingScore += addStars;
+    ratingCount++;
 
-    // persisted counters
-    localStorage.setItem('completed_orders', (+localStorage.getItem('completed_orders')||0) + 1);
-    saveAll();
+    localStorage.setItem(
+      'completed_orders',
+      (+localStorage.getItem('completed_orders') || 0) + 1
+    );
 
-    // save to trips_history for profile/shift summary
+    // история поездок для смены/профиля
     let trips = JSON.parse(localStorage.getItem('trips_history') || '[]');
     trips.push(current);
     localStorage.setItem('trips_history', JSON.stringify(trips));
 
+    saveAll();
     updateUI();
+
     orderActive = false;
     current = null;
 
-    // auto spawn next order after small delay (keeps selected transport)
-    setTimeout(()=> newOrder(), 600);
+    setTimeout(() => newOrder(), 600);
   }, 240);
 }
 
-/* PROFILE modal open/close (copied functional behavior) */
-document.getElementById('openProfileBtn').onclick = function(){
-  const ratingAvg = ratingCount>0 ? (ratingScore / ratingCount).toFixed(2) : '0.00';
+/* ПРОФИЛЬ */
+document.getElementById('openProfileBtn').onclick = () => {
+  const ratingAvg = ratingCount ? (ratingScore / ratingCount).toFixed(2) : '0.00';
   document.getElementById('profRating').textContent = `⭐ ${ratingAvg} (${ratingCount})`;
-  document.getElementById('profOrders').textContent = completed;
+  document.getElementById('profOrders').textContent =
+    '' + (localStorage.getItem('completed_orders') || completed);
   document.getElementById('profLvl').textContent = level;
   document.getElementById('profXP').textContent = xp;
   document.getElementById('profMoney').textContent = balance;
-  document.getElementById('profKm').textContent = Math.round(+localStorage.getItem('total_km') || 0);
+  document.getElementById('profKm').textContent =
+    (parseFloat(localStorage.getItem('total_km') || '0')).toFixed(1);
 
-  // history — последнее из trips_history (доставки)
-  const hist = JSON.parse(localStorage.getItem('trips_history') || '[]');
-  const hbox = document.getElementById('profHistory'); hbox.innerHTML = '';
-  if(hist.length === 0) hbox.innerHTML = '<div class="small">Заказов пока нет</div>';
-  else hist.slice(-12).reverse().forEach(t => {
-    hbox.innerHTML += `<div class="profRow">${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽</div>`;
-  });
+  const historyBox = document.getElementById('profHistory');
+  let trips = JSON.parse(localStorage.getItem('trips_history') || '[]');
+  if (!trips.length) {
+    historyBox.innerHTML = '<div class="small">Пока нет выполненных доставок</div>';
+  } else {
+    historyBox.innerHTML = trips
+      .slice(-30)
+      .reverse()
+      .map(t => `${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽`)
+      .map(t => `<div>${t}</div>`)
+      .join('');
+  }
 
-  const rev = JSON.parse(localStorage.getItem('reviews') || '[]');
-  const rbox = document.getElementById('profReviews'); rbox.innerHTML = '';
-  if(rev.length === 0) rbox.innerHTML = '<div class="small">Отзывы отсутствуют</div>';
-  else rev.slice(-20).reverse().forEach(r=>{
-    rbox.innerHTML += `<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)"><b>⭐ ${r.stars}</b> <div class="small">${r.text}</div></div>`;
-  });
+  const reviewsBox = document.getElementById('profReviews');
+  let reviews = JSON.parse(localStorage.getItem('courier_reviews') || '[]');
+  if (!reviews.length) {
+    reviewsBox.innerHTML = '<div class="small">Отзывы появятся после первых заказов</div>';
+  } else {
+    reviewsBox.innerHTML = reviews
+      .slice(-20)
+      .reverse()
+      .map(r => `<div>⭐${r.stars} — ${r.text}</div>`)
+      .join('');
+  }
 
   document.getElementById('profileModal').classList.remove('hidden');
 };
-document.getElementById('closeProfile').onclick = ()=> document.getElementById('profileModal').classList.add('hidden');
 
-/* профиль: кнопка открыть транспорт */
-document.getElementById('openTransportFromProfile').onclick = ()=>{
+document.getElementById('closeProfile').onclick = () => {
   document.getElementById('profileModal').classList.add('hidden');
-  selectedTransport = null;
-  drawTransport();
+};
+
+document.getElementById('openTransportFromProfile').onclick = () => {
+  document.getElementById('profileModal').classList.add('hidden');
   document.getElementById('transportModal').classList.remove('hidden');
 };
 
-/* END SHIFT / EXIT: show shift summary modal (like taxi), instead of immediate redirect */
-document.getElementById('endShiftVisible').onclick = ()=> {
-  // prepare summary from trips_history
-  const trips = JSON.parse(localStorage.getItem('trips_history') || '[]');
+/* СМЕНА — итог смены */
+function openShiftSummary() {
   const box = document.getElementById('summaryList');
+  let trips = JSON.parse(localStorage.getItem('trips_history') || '[]');
   box.innerHTML = '';
   let total = 0;
-  if(trips.length === 0) box.innerHTML = '<div class="small">За смену поездок не было</div>';
-  trips.forEach(t=>{
-    box.innerHTML += `<div class="summary-row">${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽</div>`;
-    total += (t.pay||0);
-  });
+
+  if (!trips.length) {
+    box.innerHTML = '<div class="small">За смену заказов не было</div>';
+  } else {
+    trips.forEach(t => {
+      total += t.pay || 0;
+      const row = document.createElement('div');
+      row.className = 'summary-row';
+      row.textContent = `${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽`;
+      box.appendChild(row);
+    });
+  }
+
   document.getElementById('sumTotal').textContent = total;
-  // show modal
   document.getElementById('shiftSummary').classList.remove('hidden');
+}
+
+function finishShift() {
+  openShiftSummary();
+}
+
+document.getElementById('endShiftVisible').onclick = () => {
+  finishShift();
 };
 
-// close summary and reset session shift data (but keep overall localStorage)
-document.getElementById('closeShiftBtn').onclick = ()=>{
-  // clear trips_history for next shift only (keeps long-term stats if desired)
+document.getElementById('closeShiftBtn').onclick = () => {
+  // очищаем историю смены
   localStorage.setItem('trips_history', JSON.stringify([]));
   document.getElementById('shiftSummary').classList.add('hidden');
-  // обновляем страницу как вы просили
-  location.reload();
+  // перезагрузка экрана смены
+  window.location.reload();
 };
 
-/* EXIT button (leave job) */
-document.getElementById('exitVisible').onclick = ()=> location.href = "../business.html";
-
-/* RENT TIMER */
-function updateRentTimer(){
-  // show nearest/active rent for activeModel first, otherwise any active rent
-  let displayText = "";
-  // if activeModel present and has expiry
-  if(activeModel && activeModel.expires && activeModel.expires > Date.now()){
-    let left = activeModel.expires - Date.now();
-    let m = Math.floor(left / 60000);
-    let s = Math.floor((left % 60000) / 1000);
-    displayText = `Аренда (ваш транспорт): ${m}:${s<10?"0":""}${s}`;
-  } else {
-    // find any active rented model and show closest expiry
-    let soon = null;
-    Object.keys(rentedModels).forEach(type=>{
-      Object.keys(rentedModels[type]).forEach(idx=>{
-        const ex = rentedModels[type][idx];
-        if(ex > Date.now()){
-          if(!soon || ex < soon.expires) soon = {type, idx, expires: ex};
-        }
-      });
-    });
-    if(soon){
-      let left = soon.expires - Date.now();
-      let m = Math.floor(left / 60000);
-      let s = Math.floor((left % 60000) / 1000);
-      displayText = `Аренда: ${m}:${s<10?"0":""}${s} (${soon.type} ${soon.idx})`;
-    }
-  }
-  document.getElementById("rentTimer").textContent = displayText;
-}
-setInterval(updateRentTimer, 1000);
-updateRentTimer();
-
-// Fix: ensure Close button on model select returns to transport selection
-if(document.getElementById('closeModelSelect')){
-  document.getElementById('closeModelSelect').onclick = ()=>{
-    document.getElementById('modelSelectModal').classList.add('hidden');
-    const tm = document.getElementById('transportModal'); if(tm) tm.classList.remove('hidden');
-  };
-}
-
-
-/* START: when page loads we show transport modal (always) */
-document.addEventListener('DOMContentLoaded', ()=>{
-  
-// === Исправленный обработчик кнопки Выйти ===
-const exitModalBtn = document.getElementById('exitJobBtn');
-if(exitModalBtn){
-  exitModalBtn.onclick = ()=>{ window.location.href = '../business.html'; };
-}
-
-  // always show transport modal on entry (as requested)
-  document.getElementById('transportModal').classList.remove('hidden');
-  drawTransport();
-  updateUI();
-
-  // restore activeModel visual if present
-  if(activeModel && activeModel.type){
-    // if rental expired — clear it
-    const expires = activeModel.expires || (rentedModels[activeModel.type] && rentedModels[activeModel.type][activeModel.index]);
-    if(!expires || expires <= Date.now()){
-      activeModel = null;
-      localStorage.removeItem('activeModel');
-    } else {
-      // set transport to active model type but still keep modal shown (you said initial modal always visible)
-      transport = activeModel.type;
-      setTransportStaticImage(activeModel.type, activeModel.index);
-    }
-  }
-});
-
-// === Автоматическое завершение смены при выходе ===
-function autoFinishAndExit(){
+/* выход со смены с автозавершением */
+function autoFinishAndExit() {
   try {
-    if (typeof finishShift === 'function') {
-      finishShift();
-    }
-  } catch(e){ console.error('autoFinish error', e); }
-  setTimeout(()=>{ window.location.href = '../business.html'; }, 400);
+    finishShift();
+  } catch (e) {
+    console.error('autoFinish error', e);
+  }
+  setTimeout(() => { window.location.href = '../business.html'; }, 400);
 }
-document.querySelectorAll('#exitVisible,#exitJobBtn').forEach(btn => {
-  if(btn){ btn.onclick = ()=> autoFinishAndExit(); }
-});
 
+document.querySelectorAll('#exitVisible,#exitJobBtn').forEach(btn => {
+  if (btn) {
+    btn.onclick = () => autoFinishAndExit();
+  }
+});
 </script>
+
 </body>
 </html>

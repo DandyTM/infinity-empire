@@ -1,326 +1,590 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<title>INFINITY GO — Такси</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<style>
-:root{
-  --bg:#efefef;
-  --card:#fff;
-  --muted:#666;
-  --accent:#FFD200;
-  --text:#111;
-  --shadow: 0 10px 26px rgba(0,0,0,.18);
-}
-[data-theme="dark"]{
-  --bg:#0f0f11;
-  --card:#121214;
-  --muted:#bdbdbd;
-  --accent:#FFD200;
-  --text:#f7f7f7;
-  --shadow: 0 12px 36px rgba(0,0,0,.6);
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  overflow-x:hidden;
-}
+  <meta charset="utf-8" />
+  <title>INFINITY GO — Такси</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#efefef;
+      --card:#ffffffee;
+      --muted:#666;
+      --accent:#FFD200;
+      --text:#111;
+      --shadow: 0 10px 26px rgba(0,0,0,.18);
+      --shell-bg: radial-gradient(circle at top, rgba(255,255,255,0.9) 0, transparent 55%),
+        linear-gradient(180deg, #f4f4f8, #d9d9e2);
+    }
+    [data-theme="dark"]{
+      --bg:#050816;
+      --card:rgba(12, 12, 18, 0.96);
+      --muted:#bdbdbd;
+      --accent:#FFD200;
+      --text:#f7f7f7;
+      --shadow: 0 12px 36px rgba(0,0,0,.6);
+      --shell-bg: radial-gradient(circle at top, rgba(255, 255, 255, 0.07) 0, transparent 55%),
+        linear-gradient(180deg, #14141c, #050509);
+    }
 
-/* HEADER */
-.header{
-  position:fixed; top:0; left:0; right:0;
-  display:flex; align-items:center; justify-content:center;
-  padding:12px 18px; background:var(--card);
-  border-bottom:1px solid rgba(0,0,0,.06); z-index:1200;
-  box-shadow: var(--shadow);
-}
-.header img.logo{height:46px; display:block;}
-.header .left, .header .right{position:absolute; top:10px; display:flex; gap:10px; align-items:center;}
-.header .left{left:14px;}
-.header .right{right:14px;}
+    *{ box-sizing:border-box; }
 
-/* RATING BOX */
-#ratingBox{
-  background:var(--card);
-  border-radius:10px;
-  padding:8px 10px;
-  font-size:14px;font-weight:700;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-  display:flex; flex-direction:column; align-items:flex-start;
-  gap:4px;
-  color:var(--text);
-}
-#levelSection {
-  background: var(--card);
-  padding: 12px 18px;
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-}
+    html, body{
+      margin:0;
+      padding:0;
+      height:100%;
+      font-family:'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      user-select:none;
+    }
 
-/* THEME TOGGLE */
-.theme-toggle{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px; border-radius:14px; cursor:pointer;
-}
-.switch{
-  width:46px; height:26px; border-radius:16px; display:inline-block; position:relative;
-  background:#222; border:2px solid rgba(0,0,0,.08);
-}
-.switch .knob{
-  position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
-  background:#fff; transition:all .18s ease;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-}
-[data-theme="dark"] .switch{ background:var(--accent); border-color:rgba(0,0,0,.25); }
-[data-theme="dark"] .switch .knob{ left:22px; background:#111; }
+    body{
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      -webkit-tap-highlight-color:transparent;
+    }
 
-/* HEADER BUTTONS (always visible) */
-.header-btn{
-  background:var(--card); border:1px solid rgba(0,0,0,.08);
-  padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;
-  box-shadow:0 6px 18px rgba(0,0,0,.08);
-  color:var(--text);
-}
+    .app-shell{
+      position:relative;
+      width:100%;
+      max-width:480px;
+      height:100vh;
+      background:var(--shell-bg);
+      overflow:hidden;
+      box-sizing:border-box;
+      padding-top:calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 70px);
+      display:flex;
+      flex-direction:column;
+    }
 
-/* TASK PANEL */
-#taskPanel{
-  margin:86px auto 14px;
-  width:90%; max-width:720px;
-  background:var(--accent); color:#111;
-  padding:12px 16px; border-radius:14px; font-weight:700; text-align:center;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-}
+    @media (min-width:600px){
+      .app-shell{
+        margin:12px auto;
+        border-radius:26px;
+        box-shadow:0 18px 45px rgba(0,0,0,0.55);
+      }
+    }
 
-/* ORDER LIST */
-#orderList{
-  padding:8px;
-  display:flex; flex-direction:column; align-items:center; gap:14px;
-  margin-bottom:200px;
-  max-width:980px; margin-left:auto; margin-right:auto;
-}
+    /* TOP BAR */
+    .top-bar{
+      padding:8px 16px 4px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      position:relative;
+      z-index:10;
+    }
 
-/* ORDER CARD */
-.order-card{
-  width:92%; max-width:720px; background:var(--card); border-radius:14px;
-  padding:14px 18px; display:flex; justify-content:space-between; align-items:center;
-  cursor:pointer; box-shadow:var(--shadow); transition:transform .18s, box-shadow .18s;
-}
-.order-card:hover{ transform:translateY(-6px); box-shadow: 0 18px 50px rgba(0,0,0,.22); }
-.order-card .meta{opacity:.85; color:var(--muted); font-weight:600;}
-.take-btn{
-  background:var(--accent); border:none; padding:8px 14px; border-radius:10px; cursor:pointer; font-weight:700;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-}
+    .top-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
 
-/* ACTIVE ORDER (bottom) */
-#activeOrderBox{
-  position:fixed; left:0; right:0; bottom:18px;
-  margin:0 auto; width:94%; max-width:960px;
-  background:var(--card); padding:14px; border-radius:14px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.28); display:none; z-index:1100;
-}
-#activeOrderBox .title{font-weight:800; margin-bottom:6px;}
-#roadWrapper{ position:relative; height:28px; background:rgba(0,0,0,.06); border-radius:999px; overflow:hidden;}
-#roadProgress{ height:100%; background:var(--accent); width:0%; transition: width .15s linear; border-radius:999px;}
-#carIcon{
-  position:absolute;
-  top:-9px; /* подняли выше */
-  left:0;
-  width:40px; /* уменьшили размер */ 
-  transform:scaleX(-1);
-  transition:left .15s linear;
-}
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
 
+    .logo{
+      height:32px;
+      display:block;
+    }
 
-/* NEXT ORDER */
-#nextOrderBox{ margin-top:10px; background: rgba(255, 208, 0, 0.9); padding:8px 12px; border-radius:10px; font-weight:700; }
+    .top-title{
+      font-size:18px;
+      font-weight:700;
+    }
 
-/* MODALS */
-.modal-back{
-  position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:2000;
-  backdrop-filter: blur(4px);
-}
-.modal{
-  width:92%; max-width:520px; border-radius:18px; background:var(--card); padding:16px; box-shadow:var(--shadow);
-}
+    .top-subtitle{
+      font-size:12px;
+      opacity:0.8;
+    }
 
-/* CAR CARD in modal */
-.car-card{
-  display:flex; gap:12px; align-items:center; padding:12px; border-radius:12px; background:rgba(0,0,0,0.03);
-  margin-bottom:12px; cursor:pointer;
-}
-.car-card img{ width:110px; height:70px; object-fit:cover; border-radius:10px; }
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
 
-/* SHIFT SUMMARY */
-.summary-row{ padding:8px 0; border-bottom:1px solid rgba(0,0,0,.06); font-weight:600; color:var(--muted); }
+    /* THEME TOGGLE */
+    .theme-toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px;
+      border-radius:14px;
+      cursor:pointer;
+      background:rgba(0,0,0,0.22);
+      box-shadow:0 4px 12px rgba(0,0,0,.35);
+      font-size:11px;
+      font-weight:700;
+    }
+    .switch{
+      width:46px;
+      height:26px;
+      border-radius:16px;
+      display:inline-block;
+      position:relative;
+      background:#222;
+      border:2px solid rgba(0,0,0,.2);
+    }
+    .switch .knob{
+      position:absolute;
+      top:2px;
+      left:2px;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:#fff;
+      transition:all .18s ease;
+      box-shadow:0 2px 8px rgba(0,0,0,.25);
+    }
+    [data-theme="dark"] .switch{
+      background:var(--accent);
+      border-color:rgba(0,0,0,.25);
+    }
+    [data-theme="dark"] .switch .knob{
+      left:22px;
+      background:#111;
+    }
 
-/* PROFILE */
-#profileContent .profRow{ padding:8px 0; border-bottom:1px solid rgba(0,0,0,.06); }
-#profileContent .small{ color:var(--muted); font-size:13px; }
+    /* rating box */
+    #ratingBox{
+      background:var(--card);
+      border-radius:14px;
+      padding:8px 10px;
+      font-size:13px;
+      font-weight:700;
+      box-shadow:0 6px 18px rgba(0,0,0,.18);
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      color:var(--text);
+      min-width:130px;
+    }
+    #orderCountView{
+      font-weight:600;
+      color:var(--muted);
+      font-size:12px;
+    }
 
-/* small utilities */
-.hidden{ display:none; }
-.center{ text-align:center; }
+    .header-actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
 
-/* responsive */
-@media(max-width:640px){
-  #taskPanel{ width:94% }
-  .order-card{ width:95% }
-  #activeOrderBox{ width:96% }
-}
+    .header-btn{
+      border-radius:10px;
+      padding:7px 10px;
+      border:1px solid rgba(0,0,0,.12);
+      background:var(--card);
+      color:var(--text);
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+    .header-btn:active{
+      transform:translateY(1px) scale(0.98);
+      box-shadow:0 3px 10px rgba(0,0,0,.3);
+    }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: url("moscow.png") center/cover no-repeat;
-  filter: blur(8px) brightness(0.75);
-  z-index: -1;
-  pointer-events: none;
-  transition: background 0.4s ease, filter 0.4s ease;
-}
+    /* MAIN CONTENT */
+    .screen-content{
+      flex:1;
+      padding:4px 16px 16px;
+      overflow-y:auto;
+    }
 
-/* Тёмная тема */
-[data-theme="dark"] body::before {
-  background: url("moscow_night.png") center/cover no-repeat;
-  filter: blur(8px) brightness(0.45);
-}
-/* Тёмная тема — текст для блока следующего заказа */
-[data-theme="dark"] #nextOrderBox {
-  color: #000 !important;
-}
-[data-theme="dark"] #xpBarWrapper {
-  background: rgba(255,255,255,.25);
-}
-#statusRow {
-  width: 90%;
-  max-width: 900px;
-  margin: 86px auto 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    #levelBlock{
+      width:100%;
+      background:var(--card);
+      padding:10px 12px;
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      margin-bottom:10px;
+    }
 
+    #levelView{
+      font-weight:700;
+      margin-bottom:4px;
+      font-size:15px;
+    }
+    #xpBarWrapper{
+      width:100%;
+      height:8px;
+      background:rgba(0,0,0,.14);
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:4px;
+    }
+    #xpBar{
+      height:100%;
+      background:var(--accent);
+      width:0%;
+      transition:width .25s;
+      border-radius:999px;
+    }
+    #xpText{
+      font-size:12px;
+      font-weight:600;
+      color:var(--muted);
+      text-align:right;
+      margin-top:4px;
+    }
+    [data-theme="dark"] #xpBarWrapper{
+      background:rgba(255,255,255,.18);
+    }
 
+    #taskPanel{
+      width:100%;
+      margin-bottom:12px;
+      background:var(--accent);
+      color:#111;
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:700;
+      font-size:13px;
+      box-shadow:0 8px 20px rgba(0,0,0,.25);
+      text-align:center;
+    }
 
-#levelBlock {
-  width: 270px;
-  background: var(--card);
-  padding: 10px 14px;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
-}
+    /* ORDER LIST */
+    #orderList{
+      width:100%;
+      margin-top:4px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding-bottom:16px;
+    }
 
-#levelView {
-  font-weight: 700;
-  margin-bottom: 6px;
-}
+    .order-card{
+      width:100%;
+      background:var(--card);
+      border-radius:16px;
+      padding:14px 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:10px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      transition:transform .18s, box-shadow .18s;
+    }
+    .order-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 14px 40px rgba(0,0,0,.25);
+    }
+    .order-card .meta{
+      opacity:.85;
+      color:var(--muted);
+      font-weight:600;
+      font-size:13px;
+      margin-top:6px;
+    }
+    .take-btn{
+      background:var(--accent);
+      border:none;
+      padding:9px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+      box-shadow:0 6px 18px rgba(0,0,0,.22);
+      white-space:nowrap;
+    }
+    .take-btn:active{
+      transform:translateY(1px) scale(0.98);
+      box-shadow:0 3px 10px rgba(0,0,0,.3);
+    }
 
-#xpBarWrapper {
-  width: 100%;
-  height: 8px;
-  background: rgba(0,0,0,.14);
-  border-radius: 8px;
-  overflow:hidden;
-  margin-bottom: 4px;
-}
+    /* ACTIVE ORDER BOX */
+    #activeOrderBox{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:calc(env(safe-area-inset-bottom, 0px) + 74px);
+      width:100%;
+      max-width:480px;
+      margin:0;
+      background:var(--card);
+      padding:12px 14px;
+      border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.55);
+      display:none;
+      z-index:900;
+    }
+    #activeOrderBox .title{
+      font-weight:800;
+      margin-bottom:6px;
+    }
 
-#xpBar {
-  height: 100%;
-  background: var(--accent);
-  width: 0%;
-  transition: width .25s;
-}
+    #roadWrapper{
+      position:relative;
+      height:26px;
+      background:rgba(0,0,0,.12);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    #roadProgress{
+      height:100%;
+      background:var(--accent);
+      width:0%;
+      transition:width .15s linear;
+      border-radius:999px;
+    }
+    #carIcon{
+      position:absolute;
+      top:-9px;
+      left:0;
+      width:40px;
+      transform:scaleX(-1);
+      transition:left .15s linear;
+    }
+    #currentKmText{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    #currentPayText{
+      margin-top:6px;
+      font-weight:800;
+      font-size:14px;
+    }
+    #nextOrderBox{
+      margin-top:10px;
+      background:rgba(255, 208, 0, 0.9);
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:700;
+    }
+    [data-theme="dark"] #nextOrderBox{
+      color:#000 !important;
+    }
 
-#xpText {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  text-align: right;
-}
+    /* MODALS */
+    .modal-back{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+      backdrop-filter:blur(4px);
+    }
+    .modal{
+      width:92%;
+      max-width:520px;
+      border-radius:18px;
+      background:var(--card);
+      padding:16px;
+      box-shadow:var(--shadow);
+      max-height:82vh;
+      overflow-y:auto;
+    }
+    .hidden{ display:none !important; }
 
-[data-theme="dark"] #xpBarWrapper {
-  background: rgba(255,255,255,.18);
-}
-#levelBlock {
-  position: fixed;
-  top: 78px; /* совпадает с низом header */
-  right: 18px;
-  width: 250px;
-  background: var(--card);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  padding: 10px 14px;
-  z-index: 1500;
-}
+    .car-card{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:12px;
+      border-radius:12px;
+      background:rgba(0,0,0,0.03);
+      margin-bottom:12px;
+      cursor:pointer;
+    }
+    .car-card img{
+      width:110px;
+      height:70px;
+      object-fit:cover;
+      border-radius:10px;
+    }
+    .summary-row{
+      padding:8px 0;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      font-weight:600;
+      color:var(--muted);
+      font-size:13px;
+    }
 
-</style>
+    #profileContent .profRow{
+      padding:8px 0;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      font-size:14px;
+    }
+    #profileContent .small{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:env(safe-area-inset-bottom, 0px);
+      width:100%;
+      max-width:480px;
+      height:70px;
+      background:rgba(255,255,255,0.15);
+      backdrop-filter:blur(18px);
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      border-top:1px solid rgba(255,255,255,0.18);
+      z-index:1000;
+    }
+
+    .nav-item{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      font-size:11px;
+      color:#dfe9ff;
+      text-decoration:none;
+      gap:2px;
+      min-width:50px;
+    }
+    .nav-item img{
+      width:24px;
+      height:24px;
+      margin-bottom:2px;
+    }
+    .nav-item span{
+      opacity:0.9;
+    }
+    .nav-item.active span{
+      color:var(--accent);
+      font-weight:600;
+      opacity:1;
+    }
+    .nav-item.active img{
+      transform:translateY(-1px);
+    }
+
+    /* blurred background city (kept from original) */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:url("moscow.png") center/cover no-repeat;
+      filter:blur(8px) brightness(0.75);
+      z-index:-1;
+      pointer-events:none;
+      transition:background 0.4s ease, filter 0.4s ease;
+    }
+    [data-theme="dark"] body::before{
+      background:url("moscow_night.png") center/cover no-repeat;
+      filter:blur(8px) brightness(0.45);
+    }
+  </style>
 </head>
 <body>
 
-<!-- rating + counters on top-left -->
-<div class="header">
-  <div class="left">
-    <div id="ratingBox">
-      <div id="ratingView">⭐ 0.00 (0)</div>
-      <div id="orderCountView" style="font-weight:600;color:var(--muted)">Заказов: 0</div>
+<div class="app-shell">
+
+  <!-- Верхняя панель -->
+  <header class="top-bar">
+    <div class="top-row">
+      <div class="top-left">
+        <img class="logo" src="./icons/infinity_go.png" alt="INFINITY GO">
+        <div>
+          <div class="top-title">INFINITY GO — Такси</div>
+          <div class="top-subtitle">Бери заказы и прокачивай уровень</div>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="theme-toggle" id="themeToggle" title="Тема">
+          <div style="font-size:11px;font-weight:700;">Тема</div>
+          <div class="switch" id="themeSwitch"><div class="knob"></div></div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <img class="logo" src="../icons/infinity_go.png" alt="INFINITY GO">
-
-  <div class="right">
-    <button id="openProfileBtn" class="header-btn">Профиль</button>
-    <button id="endShiftVisible" class="header-btn">Завершить смену</button>
-    <button id="exitVisible" class="header-btn">Выйти</button>
-
-    <div class="theme-toggle" id="themeToggle" title="Тема">
-      <div style="font-size:13px; font-weight:700;">Тема</div>
-      <div class="switch" id="themeSwitch"><div class="knob"></div></div>
+    <div class="top-row">
+      <div id="ratingBox">
+        <div id="ratingView">⭐ 0.00 (0)</div>
+        <div id="orderCountView">Заказов: 0</div>
+      </div>
+      <div class="header-actions">
+        <button id="openProfileBtn" class="header-btn">Профиль</button>
+        <button id="endShiftVisible" class="header-btn">Смена</button>
+        <button id="exitVisible" class="header-btn">Выйти</button>
+      </div>
     </div>
+  </header>
+
+  <!-- Основной контент -->
+  <main class="screen-content">
+    <section id="levelBlock">
+      <div id="levelView">Уровень: 1</div>
+      <div id="xpBarWrapper">
+        <div id="xpBar"></div>
+      </div>
+      <div id="xpText">0 / 120 XP</div>
+    </section>
+
+    <section id="taskPanel">
+      🎯 Задание: Выполнить <span id="taskGoal">8</span> заказов
+      (<span id="taskDone">0</span> / <span id="taskGoal2">8</span>)
+      — награда: +<span id="taskReward">3000</span> ₽
+    </section>
+
+    <div id="orderList"></div>
+  </main>
+
+  <!-- Активный заказ -->
+  <div id="activeOrderBox">
+    <div class="title">Активный заказ</div>
+    <div id="currentRoute" style="font-weight:700;margin-bottom:8px;"></div>
+
+    <div id="roadWrapper">
+      <div id="roadProgress"></div>
+      <img id="carIcon" src="./icons/taxi.png" alt="taxi">
+    </div>
+
+    <div id="currentKmText"></div>
+    <div id="currentPayText"></div>
+    <div id="nextOrderBox" class="hidden"></div>
   </div>
-</div>
 
+  <!-- Нижняя навигация -->
+  <nav class="bottom-nav">
+    <a href="../fun.html" class="nav-item">
+      <img src="../assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="../business.html" class="nav-item">
+      <img src="../assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="../index.html" class="nav-item">
+      <img src="../assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="../profile.html" class="nav-item">
+      <img src="../assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="../settings.html" class="nav-item">
+      <img src="../assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
 
-<div id="taskPanel">
-  🎯 Задание: Выполнить <span id="taskGoal">8</span> заказов 
-  (<span id="taskDone">0</span> / <span id="taskGoal2">8</span>) 
-  — награда: +<span id="taskReward">3000</span> ₽
-</div>
-<div id="levelBlock">
-  <div id="levelView">Уровень: 1</div>
-  <div id="xpBarWrapper">
-    <div id="xpBar"></div>
-  </div>
-  <div id="xpText">0 / 120 XP</div>
-</div>
-
-
-
-
-
-<!-- orders list -->
-<div id="orderList"></div>
-
-<!-- active order (bottom) -->
-<div id="activeOrderBox">
-  <div class="title">Активный заказ</div>
-  <div id="currentRoute" style="font-weight:700;margin-bottom:8px;"></div>
-
-  <div id="roadWrapper">
-    <div id="roadProgress"></div>
-    <img id="carIcon" src="../icons/taxi.png" alt="taxi">
-  </div>
-
-  <div id="currentKmText" style="margin-top:8px;color:var(--muted)"></div>
-  <div id="currentPayText" style="margin-top:6px;font-weight:800;"></div>
-  <div id="nextOrderBox" class="hidden" style="margin-top:10px;"></div>
 </div>
 
 <!-- CAR SELECT MODAL -->
@@ -336,10 +600,8 @@ body::before {
 <div id="rentModal" class="modal-back hidden">
   <div class="modal">
     <h3>Выбери машину для аренды</h3>
-
     <div id="rentList" style="margin-top:10px;"></div>
-
-    <div class="center" style="margin-top:12px;">
+    <div style="text-align:center;margin-top:12px;">
       <button class="header-btn" onclick="closeRentModal()" style="background:var(--accent);">Отмена</button>
     </div>
   </div>
@@ -361,7 +623,9 @@ body::before {
     <h2>Смена завершена</h2>
     <div id="summaryList"></div>
     <h3 style="margin-top:12px">Итого на баланс (после комиссии парка): <span id="sumTotal">0</span> ₽</h3>
-    <div class="center" style="margin-top:12px;"><button class="header-btn" onclick="closeShiftSummary()" style="background:var(--accent);">Ок</button></div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="header-btn" onclick="closeShiftSummary()" style="background:var(--accent);">Ок</button>
+    </div>
   </div>
 </div>
 
@@ -375,12 +639,14 @@ body::before {
     <div class="profRow"><b>Опыт:</b> <span id="profXP">0</span></div>
     <div class="profRow"><b>Всего заработано:</b> <span id="profMoney">0</span> ₽</div>
     <div class="profRow"><b>Общий пробег:</b> <span id="profKm">0</span> км</div>
+
     <h3 style="margin-top:12px;">Последние заказы</h3>
     <div id="profHistory" style="max-height:200px; overflow-y:auto; margin-top:8px;"></div>
+
     <h3 style="margin-top:12px;">Отзывы пассажиров</h3>
     <div id="profReviews" style="max-height:160px; overflow-y:auto; margin-top:8px;"></div>
 
-    <div style="margin-top:12px;" class="center">
+    <div style="margin-top:12px; text-align:center;">
       <button id="closeProfile" class="header-btn" style="background:var(--accent);">Закрыть</button>
     </div>
   </div>
@@ -448,6 +714,7 @@ function addRating(stars, text){
   }
   updateRatingUI();
 }
+
 let level = +localStorage.getItem('driver_level') || 1;
 let xp = +localStorage.getItem('driver_xp') || 0;
 
@@ -466,7 +733,6 @@ function updateXPUI(){
   document.getElementById('xpText').textContent = `${xp} / ${need} XP`;
 }
 
-
 function addXP(amount){
   xp += amount;
 
@@ -481,12 +747,11 @@ function addXP(amount){
     showEvent(`🎉 Новый уровень! Теперь у вас ${level} уровень`);
 
     saveLevel();
-    updateProfileUI(); // если нужно обновлять профиль
+    updateProfileUI && updateProfileUI();
   }
 
   saveLevel();
   updateXPUI();
-
 }
 
 /* -------------------------
@@ -513,6 +778,7 @@ function getClassByPriceNumeric(price){
   if(price < 8000000) return 'Бизнес';
   return 'Премиум';
 }
+
 const rentCars = [
   // Эконом
   { brand: "Hyundai", model: "Solaris", cls:"Эконом", priceRub:700000, img:"solaris.png", rentCost: 700 },
@@ -526,6 +792,7 @@ const rentCars = [
   { brand: "Toyota", model: "Camry", cls:"Бизнес", priceRub:2500000, img:"camry.png", rentCost: 1700 },
   { brand: "BMW", model: "320i", cls:"Бизнес", priceRub:3400000, img:"320i.png", rentCost: 2100 }
 ];
+
 function openRentModal(){
   document.getElementById('rentModal').classList.remove('hidden');
   const box = document.getElementById('rentList');
@@ -556,7 +823,6 @@ function openRentModal(){
     `;
   });
 }
-
 
 function closeRentModal(){
   document.getElementById('rentModal').classList.add('hidden');
@@ -612,7 +878,6 @@ document.getElementById('rentBtn').onclick = () => {
   openRentModal();
 };
 
-
 function selectCar(i){
   selectedCar = garage[i];
   document.getElementById('carModal').classList.add('hidden');
@@ -625,10 +890,9 @@ function setPark(c){
   parkCommission = c;
   const modal = document.getElementById('parkModal');
   modal.classList.add('hidden');
-  modal.style.display = 'none';    // ← ВОТ ЭТО ГЛАВНОЕ
+  modal.style.display = 'none';
   startOrders();
 }
-
 
 /* Task panel */
 let taskGoal = 0;
@@ -636,13 +900,9 @@ let taskDone = 0;
 let taskReward = 0;
 
 function generateNewTask(){
-  // Генерируем количество заказов: от 5 до 12
   taskGoal = Math.floor(Math.random()*8) + 5; // 5–12
   taskDone = 0;
-
-  // Генерируем награду: 2000–6000 с небольшим разбросом
-  taskReward = (Math.floor(Math.random()*5)+2) * 1000;
-
+  taskReward = (Math.floor(Math.random()*5)+2) * 1000; // 2000–6000
   updateTaskUI();
 }
 
@@ -651,7 +911,6 @@ function updateTaskUI(){
   document.getElementById('taskGoal2').textContent = taskGoal;
   document.getElementById('taskDone').textContent = taskDone;
 }
-
 
 /* Order generation */
 const streets = ["Тверская","Арбат","Сретенка","Бауманская","Лубянка","Проспект Мира","Садовая","Лубянская"];
@@ -671,15 +930,15 @@ function makeOrder(){
 
   // усиливаем в зависимости от класса авто
   if(cls === 'Комфорт'){
-    vipChance += 0.04;      // +4%
+    vipChance += 0.04;
   }
   if(cls === 'Бизнес'){
-    vipChance += 0.08;      // +8%
-    airportChance += 0.04;  // +4%
+    vipChance += 0.08;
+    airportChance += 0.04;
   }
   if(cls === 'Премиум'){
-    vipChance += 0.12;      // +12%
-    airportChance += 0.12;  // +12%
+    vipChance += 0.12;
+    airportChance += 0.12;
   }
 
   function calcPay(dist){
@@ -689,36 +948,33 @@ function makeOrder(){
     return Math.round(420 + dist*130); // Премиум
   }
 
+  // VIP
+  if(Math.random() < vipChance){
+    const dist = baseDist + Math.random()*4;
+    return {
+      A: from, B: to,
+      dist: +dist.toFixed(1),
+      pay: calcPay(dist) * 2,
+      vip: true,
+      cls
+    };
+  }
 
-// VIP
-if(Math.random() < vipChance){
-  const dist = baseDist + Math.random()*4;
-  return {
-    A: from, B: to,
-    dist: +dist.toFixed(1),
-    pay: calcPay(dist) * 2,
-    vip: true,
-    cls
-  };
-}
-
-// АЭРОПОРТ
-if(Math.random() < airportChance){
-  const dist = 15 + Math.random()*15; // 15–30 км
-  return {
-    A: "Аэропорт", B: to,
-    dist: +dist.toFixed(1),
-    pay: calcPay(dist),
-    airport: true,
-    cls
-  };
-}
-
+  // АЭРОПОРТ
+  if(Math.random() < airportChance){
+    const dist = 15 + Math.random()*15; // 15–30 км
+    return {
+      A: "Аэропорт", B: to,
+      dist: +dist.toFixed(1),
+      pay: calcPay(dist),
+      airport: true,
+      cls
+    };
+  }
 
   // обычный заказ
-  return { A: from, B: to, dist: baseDist, pay: calcPay(baseDist) };
+  return { A: from, B: to, dist: baseDist, pay: calcPay(baseDist), cls };
 }
-
 
 /* Orders list handling */
 let orderList = [];
@@ -728,7 +984,7 @@ function drawOrders(){
 
   orderList.forEach((o, i) => {
 
-    // XP preview (та же формула, но только показать!)
+    // XP preview
     let xpPreview = 10 + o.dist * 2;
     if(o.cls === 'Комфорт') xpPreview = 14 + o.dist * 3;
     if(o.cls === 'Бизнес') xpPreview = 20 + o.dist * 3.5;
@@ -744,7 +1000,7 @@ function drawOrders(){
     const el = document.createElement('div');
     el.className = 'order-card';
     el.innerHTML = `
-      <div>
+      <div style="flex:1;">
         <div style="font-weight:800;">${label}${o.A} → ${o.B}</div>
         <div class="meta">${o.dist} км · ${o.pay} ₽ · +${xpPreview} XP · ${o.cls || ''}</div>
       </div>
@@ -755,8 +1011,6 @@ function drawOrders(){
     box.appendChild(el);
   });
 }
-
-
 
 function refreshOrders(){
   try{
@@ -821,7 +1075,7 @@ function showEvent(msg){
   setTimeout(()=>d.remove(),2200);
 }
 
-/* Trip logic (smooth animation using requestAnimationFrame) */
+/* Trip logic */
 function startTrip(o){
   current = o;
   document.getElementById('activeOrderBox').style.display = 'block';
@@ -832,20 +1086,19 @@ function startTrip(o){
   const event = randomEvent();
   let speedFactor = 1;
   if(event === 'traffic'){ speedFactor = 0.6; showEvent('🚧 Пробка — едем медленнее'); }
-  else if(event === 'rain'){ showEvent('☔ Идёт дождь — повешенный шанс положительного отзыва'); }
+  else if(event === 'rain'){ showEvent('☔ Идёт дождь — повышенный шанс положительного отзыва'); }
   else if(event === 'tips'){ const tip = (50 + Math.floor(Math.random()*400)); o.pay += tip; showEvent('💸 Чаевые: +' + tip + ' ₽'); }
   else if(event === 'angry'){ showEvent('😠 Клиент недоволен — шанс снижения оценки'); }
 
-  // Базовое время зависит от расстояния: ~1.2 сек за км + минимум
-let baseTime = o.dist * 1200; // 1.2 секунды на каждый километр
-const durationMs = Math.max(3000, Math.round(baseTime / speedFactor));
+  let baseTime = o.dist * 1200;
+  const durationMs = Math.max(3000, Math.round(baseTime / speedFactor));
 
   const start = performance.now();
   function frame(now){
     const progress = Math.min((now - start) / durationMs, 1);
     document.getElementById('roadProgress').style.width = (progress * 100) + '%';
     document.getElementById('carIcon').style.left = `calc(${progress * 100}% - 28px)`;
-    document.getElementById('currentKmText').textContent = `Прогресс: ${ (o.dist * progress).toFixed(1) } / ${o.dist} км`;
+    document.getElementById('currentKmText').textContent = `Прогресс: ${(o.dist * progress).toFixed(1)} / ${o.dist} км`;
     if(progress < 1) animationHandle = requestAnimationFrame(frame);
     else {
       cancelAnimationFrame(animationHandle);
@@ -855,13 +1108,18 @@ const durationMs = Math.max(3000, Math.round(baseTime / speedFactor));
   animationHandle = requestAnimationFrame(frame);
 }
 
+/* Play sound when new order appears */
+function playSound(){
+  try{ new Audio('yandex.mp3').play().catch(()=>{}); }catch(e){}
+}
+
 /* Finish trip */
 function finishTrip(o, event){
   // Выполнено для задания
   taskDone++;
   updateTaskUI();
 
-  // Проверка выполнения задания (награда за выполнение)
+  // Проверка выполнения задания
   if(taskDone >= taskGoal){
     const bal = +localStorage.getItem('balance_rub') || 0;
     localStorage.setItem('balance_rub', bal + taskReward);
@@ -885,14 +1143,14 @@ function finishTrip(o, event){
     localStorage.setItem('garage', JSON.stringify(garage));
   }
 
-  // ✅ Записать заработок за смену
+  // Заработок за смену
   shiftEarn += o.pay;
 
-  // ✅ Сохранить поездку в историю
+  // История поездок
   completedTrips.push(o);
   localStorage.setItem('trips_history', JSON.stringify(completedTrips));
 
-  // Обновление рейтинга (мягче)
+  // Рейтинг
   let stars;
   if(event === 'angry'){
     stars = Math.random() < 0.4 ? 3 : 4;
@@ -919,48 +1177,37 @@ function finishTrip(o, event){
 
   // Обновить список заказов
   if(orderList.length < 4) refreshOrders();
-  // XP за заказ — зависит от класса и типа
-let baseXP = 10 + o.dist * 2; // Эконом по умолчанию
 
-if(o.cls === 'Комфорт') baseXP = 14 + o.dist * 3;
-if(o.cls === 'Бизнес') baseXP = 20 + o.dist * 3.5;
-if(o.cls === 'Премиум') baseXP = 30 + o.dist * 4;
+  // XP за заказ
+  let baseXP = 10 + o.dist * 2;
+  if(o.cls === 'Комфорт') baseXP = 14 + o.dist * 3;
+  if(o.cls === 'Бизнес') baseXP = 20 + o.dist * 3.5;
+  if(o.cls === 'Премиум') baseXP = 30 + o.dist * 4;
+  if(o.airport) baseXP += 25;
+  if(o.vip) baseXP *= 1.8;
 
-if(o.airport) baseXP += 25; // Аэропорт бонус
-if(o.vip) baseXP *= 1.8; // VIP множитель
-
-addXP(Math.round(baseXP));
-
+  addXP(Math.round(baseXP));
 }
 
-
-/* Play sound when new order appears */
-function playSound(){
-  try{ new Audio('yandex.mp3').play().catch(()=>{}); }catch(e){}
-}
-
-/* END SHIFT: compute park commission, add to balance, show summary */
+/* END SHIFT */
 document.getElementById('endShiftVisible').onclick = endShift;
 function endShift(){
-  // compute payout after park commission
   const final = Math.round(shiftEarn * (1 - parkCommission));
-  // add task reward if completed taskGoal
-  if(taskDone >= taskGoal){
-    localStorage.setItem('balance_rub', (+localStorage.getItem('balance_rub') || 0) + 3000);
-  }
-  // add final
+  const extraTask = taskDone >= taskGoal ? taskReward : 0;
+
   const prevBal = +localStorage.getItem('balance_rub') || 0;
-  localStorage.setItem('balance_rub', prevBal + final);
-  // display summary
+  localStorage.setItem('balance_rub', prevBal + final + extraTask);
+
   const box = document.getElementById('summaryList');
   box.innerHTML = '';
   completedTrips.forEach(t=>{
     box.innerHTML += `<div class="summary-row">${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽</div>`;
   });
-  document.getElementById('sumTotal').textContent = final + (taskDone >= taskGoal ? 3000 : 0);
-  // reset session shift earn and completedTrips for next shift
+  document.getElementById('sumTotal').textContent = final + extraTask;
+
   shiftEarn = 0;
-  completedTrips = [];localStorage.setItem('trips_history', JSON.stringify([]));
+  completedTrips = [];
+  localStorage.setItem('trips_history', JSON.stringify([]));
 
   document.getElementById('shiftSummary').classList.remove('hidden');
 }
@@ -972,7 +1219,6 @@ function closeShiftSummary(){
     location.reload();
   }, 200);
 }
-
 
 /* PROFILE modal open / close */
 document.getElementById('openProfileBtn').onclick = function(){
@@ -1003,22 +1249,18 @@ document.getElementById('closeProfile').onclick = function(){ document.getElemen
 /* EXIT button */
 document.getElementById('exitVisible').onclick = function(){ location.href = '../business.html'; };
 
-/* Menu items (keep if needed) */
+/* Hints */
 document.getElementById('endShiftVisible').title = 'Завершить смену и получить деньги';
 document.getElementById('exitVisible').title = 'Выйти из режима такси';
 
 /* START flow */
 function startOrders(){
-  // ensure selectedCar exists (if user didn't select, open car modal)
   if(!selectedCar){
     openCarModal();
     return;
   }
-  // initial fill
   generateNewTask();
-
   refreshOrders();
-  // periodic generator
   setInterval(()=> {
     if(orderList.length < 4) {
       orderList.push(makeOrder());
@@ -1028,16 +1270,14 @@ function startOrders(){
   }, 12000);
 }
 
-/* initial setup: show car modal */
+/* initial setup */
 openCarModal();
 
-/* ensure UI counters updated */
 updateRatingUI();
 updateTaskUI();
 updateQueueUI();
 updateXPUI();
-
-
 </script>
+
 </body>
 </html>

@@ -1,113 +1,491 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>BMW — INFINITY Auto</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BMW — INFINITY Auto</title>
+  <style>
+    :root {
+      --accent: #00e0c6;
+      --bg-gradient: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+    }
 
-<style>
-body { margin: 0; font-family: Inter, sans-serif; background: #ffffff; }
-.top-info { position: fixed; top: 16px; left: 16px; display: flex; align-items: center; gap: 14px; z-index: 1000; }
-.info-box {
-    background: rgba(255,255,255,0.35); backdrop-filter: blur(12px);
-    border-radius: 18px; padding: 8px 16px; font-size: 18px; font-weight: 600;
-    border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 4px 18px rgba(0,0,0,0.28);
-}
-.back-arrow { width: 30px; height: 30px; cursor: pointer; transition:.25s; opacity:.9; }
-.back-arrow:hover { transform: translateX(-4px); opacity:1; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050816;
+      user-select: none;
+    }
 
-.page-title { text-align:center; font-size:27px; font-weight:700; margin-top:90px; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.switcher { text-align:center; margin-top: 14px; }
-.switch-btn {
-    display:inline-block; margin: 0 10px; padding: 6px 14px;
-    font-size:18px; font-weight:600; cursor:pointer;
-    border-bottom:3px solid transparent; transition:.25s;
-}
-.switch-btn.active { border-bottom:3px solid #000; }
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+    }
 
-.cars {
-    margin-top: 30px; display: grid; grid-template-columns: repeat(3, 300px);
-    justify-content: center; gap: 32px; padding-bottom: 60px;
-}
-.car-card { width: 300px; background: #fff; border-radius: 26px; padding: 18px;
-    cursor: pointer; transition: .28s;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.28), 0 0 18px rgba(0,0,0,0.22);
-}
-.car-card:hover { transform: scale(1.05);
-    box-shadow: 0 26px 70px rgba(0,0,0,0.36), 0 0 22px rgba(0,0,0,0.25);
-}
-.car-card img { width:100%; border-radius:18px; }
-.car-name { font-size:17px; font-weight:600; margin-top:6px; }
-.car-price { font-size:15px; color:#444; }
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      }
+    }
 
-.modal-bg { position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45); backdrop-filter: blur(7px);
-    display: none; justify-content: center; align-items: center; z-index: 2000;
-}
-.modal {
-    background: #fff; border-radius: 26px; padding: 22px;
-    width: 90%; max-width: 720px; display: flex; gap: 22px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
-    position: relative;
-}
-#carImg { width: 50%; border-radius: 18px; object-fit: cover; }
-.modal-info { width: 50%; text-align: left; }
-.close-x { position: absolute; top: 18px; right: 24px; font-size: 28px; cursor: pointer; opacity:.7; transition:.2s; }
-.close-x:hover { opacity:1; }
+    .top-bar {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
+      left: 0;
+      right: 0;
+      padding: 0 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 1000;
+    }
 
-.variant-btn { display:inline-block; padding:8px 14px; margin:4px;
-    border-radius:10px; background:#eee; cursor:pointer; font-weight:600; transition:.2s;
-}
-.variant-btn.active { background:#111; color:#fff; }
+    .top-bar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
 
-.buy-btn { margin-top:18px; width:100%; padding:12px; border-radius:12px;
-    font-size:18px; font-weight:600; background:#111; color:#fff; cursor:pointer; transition:.25s;
-}
-.buy-btn:hover { opacity:.85; }
-</style>
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .back-chip {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.32);
+      background: rgba(5, 9, 36, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      padding: 0;
+      outline: none;
+    }
+
+    .back-chip:active {
+      transform: translateY(1px);
+      opacity: 0.8;
+    }
+
+    .top-title {
+      font-size: clamp(18px, 4.6vw, 22px);
+      font-weight: 700;
+    }
+
+    .top-subtitle {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .info-box {
+      flex: 0 0 auto;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.25);
+      text-align: center;
+      line-height: 1.2;
+      max-width: 60%;
+      white-space: nowrap;
+    }
+
+    .screen-content {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 64px);
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 16px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .section-caption {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .page-heading {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .switcher {
+      text-align: center;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .switch-btn {
+      display: inline-block;
+      margin: 0 6px;
+      padding: 4px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      color: #e5ecff;
+      opacity: 0.75;
+      transition: all .18s ease;
+    }
+
+    .switch-btn.active {
+      border-color: rgba(255,255,255,0.85);
+      background: rgba(15,23,42,0.9);
+      opacity: 1;
+    }
+
+    .cars {
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      padding-bottom: 90px;
+    }
+
+    @media (min-width: 480px) {
+      .cars {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .car-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 10px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      box-shadow: 0 12px 28px rgba(15,23,42,0.45);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .car-card:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 8px 20px rgba(15,23,42,0.6);
+    }
+
+    .car-card img {
+      width: 100%;
+      border-radius: 14px;
+      display: block;
+    }
+
+    .car-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 6px;
+      color: #111827;
+    }
+
+    .car-price {
+      font-size: 13px;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: #dfe9ff;
+      text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
+    }
+
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item span {
+      opacity: 0.85;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
+
+    /* Модалка авто */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(7px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 18px;
+      width: 92%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    @media (min-width: 640px) {
+      .modal {
+        flex-direction: row;
+      }
+    }
+
+    #carImg {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    @media (min-width: 640px) {
+      #carImg {
+        width: 48%;
+      }
+      .modal-info {
+        width: 52%;
+      }
+    }
+
+    .modal-info {
+      text-align: left;
+    }
+
+    .close-x {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      font-size: 26px;
+      cursor: pointer;
+      opacity: .7;
+      transition: .18s;
+    }
+
+    .close-x:hover {
+      opacity: 1;
+    }
+
+    .variant-btn {
+      display: inline-block;
+      padding: 6px 10px;
+      margin: 4px 4px 0 0;
+      border-radius: 999px;
+      background: #e5e7eb;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: .18s;
+    }
+
+    .variant-btn.active {
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .buy-btn {
+      margin-top: 14px;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #111827;
+      color: #ffffff;
+      cursor: pointer;
+      border: none;
+      transition: .18s;
+    }
+
+    .buy-btn:active {
+      transform: translateY(1px);
+      opacity: 0.9;
+    }
+
+    #specs {
+      margin-top: 6px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    #price {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="top-info">
-    <svg class="back-arrow" onclick="location.href='dealership.html'" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    <div class="info-box" id="balanceBox">Баланс: ...</div>
-</div>
+<div class="app-shell">
 
-<div class="page-title">BMW</div>
-
-<div class="switcher">
-    <span class="switch-btn active" id="tabBMW" onclick="showBMW()">BMW</span>
-    <span class="switch-btn" id="tabM" onclick="showM()">M</span>
-</div>
-
-<div class="cars" id="cars"></div>
-
-<div class="modal-bg" id="modalBg">
-    <div class="modal">
-        <div class="close-x" onclick="closeModal()">×</div>
-        <img id="carImg">
-        <div class="modal-info">
-            <h2 id="carTitle"></h2>
-            <div id="variants"></div>
-            <p id="specs" style="margin-top:8px;color:#555;"></p>
-            <h3 id="price"></h3>
-            <button class="buy-btn" onclick="buyCar()">Купить</button>
+  <header class="top-bar">
+    <div class="top-bar-row">
+      <div class="top-left">
+        <button class="back-chip" onclick="goBack()" aria-label="Назад">←</button>
+        <div>
+          <div class="top-title">BMW</div>
+          <div class="top-subtitle">INFINITY Auto — автосалон</div>
         </div>
+      </div>
+      <div class="info-box" id="balanceBox">Баланс: 0.00 ₽</div>
     </div>
+  </header>
+
+  <main class="screen-content">
+    <div class="section-caption">Линейка</div>
+    <div class="page-heading">BMW</div>
+
+    <div class="switcher">
+      <span class="switch-btn active" id="tabBMW" onclick="showBMW()">BMW</span>
+      <span class="switch-btn" id="tabM" onclick="showM()">M</span>
+    </div>
+
+    <div class="cars" id="cars"></div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="../fun.html" class="nav-item">
+      <img src="../assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="../business.html" class="nav-item">
+      <img src="../assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="../index.html" class="nav-item">
+      <img src="../assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="../profile.html" class="nav-item">
+      <img src="../assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="../settings.html" class="nav-item">
+      <img src="../assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
+
+</div>
+
+<!-- Модальное окно авто -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="close-x" onclick="closeModal()">×</div>
+    <img id="carImg" alt="BMW">
+    <div class="modal-info">
+      <h2 id="carTitle"></h2>
+      <div id="variants"></div>
+      <p id="specs"></p>
+      <h3 id="price"></h3>
+      <button class="buy-btn" onclick="buyCar()">Купить</button>
+    </div>
+  </div>
 </div>
 
 <script src="../assets/js/bankNotify.js"></script>
 
 <script>
-function readRub(k){return parseFloat(localStorage.getItem(k+'_rub'))||0;}
-function fmt(n){return Number(n).toLocaleString('ru-RU');}
-function cur(){return localStorage.getItem("currency")||"₽";}
-const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
-function updateBalance(){const b=readRub("balance"),c=cur();document.getElementById("balanceBox").textContent="Баланс: "+fmt(b*rates[c])+" "+c;}
-updateBalance();
+  function goBack() {
+    window.location.href = "dealership.html";
+  }
 
-/* BMW */
+  const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+
+  function readRub(k) {
+    return parseFloat(localStorage.getItem(k + "_rub")) || 0;
+  }
+
+  function fmt(n) {
+    return Number(n).toLocaleString("ru-RU", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function cur() {
+    return localStorage.getItem("currency") || "₽";
+  }
+
+  function updateBalance() {
+    const b = readRub("balance");
+    const c = cur();
+    const box = document.getElementById("balanceBox");
+    if (!box) return;
+    const rate = rates[c] || 1;
+    box.textContent = "Баланс: " + fmt(b * rate) + " " + c;
+  }
+
+  updateBalance();
+
+  /* BMW */
 const cars = [
  {name:"2 Series (G42)",img:"assets/car/bmw/g42.png",variants:[
    {name:"220i",power:184,drive:"RWD",zero:7.1,price:3550000},
@@ -256,6 +634,7 @@ function buyCar(){
  closeModal();
  showBankNotification(-v.price,"Успешная покупка ✔");
 }
+
 </script>
 
 </body>
