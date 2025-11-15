@@ -75,18 +75,37 @@
       opacity: 0.78;
     }
 
-    .balance-pill {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(5, 9, 36, 0.8);
-      border: 1px solid rgba(255,255,255,0.22);
-      font-size: 12px;
-      white-space: nowrap;
+    /* Большой блок баланса — как на главной/настройках */
+    .top-info {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 52px);
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      z-index: 900;
     }
 
+    .info-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: clamp(13px, 3.5vw, 16px);
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.25);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* Основное содержимое */
     .screen-content {
       position: absolute;
-      top: calc(env(safe-area-inset-top, 0px) + 60px);
+      top: calc(env(safe-area-inset-top, 0px) + 120px);
       bottom: 70px;
       left: 0;
       right: 0;
@@ -221,14 +240,27 @@
         <div class="top-title">Развлечения</div>
         <div class="top-subtitle">Мини-игры, которые приносят деньги в Empire</div>
       </div>
-      <div class="balance-pill" id="topBalance">Баланс: 0.00 ₽</div>
     </div>
   </header>
+
+  <!-- Большой баланс как на главной/настройках -->
+  <div class="top-info">
+    <div class="info-box" id="balanceBox">Баланс: 0.00 ₽</div>
+  </div>
 
   <main class="screen-content">
     <div class="section-caption">Работа</div>
     <div class="game-grid">
-      <a href="games/taxi.html" class="game-card">
+      <a href="games/job-courier.html" class="game-card">
+        <div class="game-icon">📦</div>
+        <div class="game-main">
+          <div class="game-title">I.Deliv</div>
+          <div class="game-sub">Курьер · доставка еды и посылок</div>
+        </div>
+        <div class="game-tag">Играть</div>
+      </a>
+
+      <a href="games/job-taxi.html" class="game-card">
         <div class="game-icon">🚕</div>
         <div class="game-main">
           <div class="game-title">INFINITY GO</div>
@@ -237,31 +269,22 @@
         <div class="game-tag">Играть</div>
       </a>
 
-      <a href="games/courier.html" class="game-card">
-        <div class="game-icon">📦</div>
-        <div class="game-main">
-          <div class="game-title">I.Deliv</div>
-          <div class="game-sub">Курьер · доставка еды и посылок</div>
-        </div>
-        <div class="game-tag">Скоро</div>
-      </a>
-
-      <a href="games/loader.html" class="game-card">
+      <a href="games/job-loader.html" class="game-card">
         <div class="game-icon">🏗️</div>
         <div class="game-main">
           <div class="game-title">Грузчик</div>
           <div class="game-sub">Физический труд за стабильную оплату</div>
         </div>
-        <div class="game-tag">Скоро</div>
+        <div class="game-tag">Играть</div>
       </a>
 
-      <a href="games/cleaner.html" class="game-card">
+      <a href="games/job-cleaner.html" class="game-card">
         <div class="game-icon">🧹</div>
         <div class="game-main">
           <div class="game-title">Клининг</div>
           <div class="game-sub">Уборка, обслуживание, клиенты</div>
         </div>
-        <div class="game-tag">Скоро</div>
+        <div class="game-tag">Играть</div>
       </a>
     </div>
 
@@ -316,7 +339,7 @@
   function updateBalance() {
     const balRub = readRub('balance');
     const rate = rates[currency] || 1;
-    const el = document.getElementById('topBalance');
+    const el = document.getElementById('balanceBox');
     if (!el) return;
     el.textContent = 'Баланс: ' + fmt(balRub * rate) + ' ' + currency;
   }
