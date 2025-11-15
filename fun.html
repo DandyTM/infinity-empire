@@ -4,160 +4,324 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>INFINITY Empire — Развлечения</title>
-
   <style>
-    :root { --accent: #00e0c6; }
+    :root {
+      --accent: #00e0c6;
+      --bg-gradient: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+    }
 
     html, body {
       margin: 0;
+      padding: 0;
       height: 100%;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
-      background-attachment: fixed;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050816;
       color: #fff;
+      user-select: none;
     }
 
-    /* ✅ Баланс теперь по центру, без translate и без багов */
-    .top-info {
-      position: fixed;
-      top: 16px;
-      width: 100%;
+    body {
       display: flex;
       justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+    }
+
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      }
+    }
+
+    .top-bar {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
+      left: 0;
+      right: 0;
+      padding: 0 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       z-index: 1000;
     }
 
-    .info-box {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 14px 26px;
-      font-size: 22px;
-      font-weight: 600;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.25);
-      box-shadow: 0 0 12px rgba(0,0,0,0.25);
-    }
-
-    .page-title {
-      text-align: center;
-      font-size: 28px;
-      font-weight: 700;
-      margin-top: 110px;
-    }
-
-    .salon-options {
-      margin-top: 40px;
+    .top-bar-row {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top-title {
+      font-size: clamp(18px, 4.6vw, 22px);
+      font-weight: 700;
+    }
+
+    .top-subtitle {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .balance-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(5, 9, 36, 0.8);
+      border: 1px solid rgba(255,255,255,0.22);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .screen-content {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 60px);
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 16px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .section-caption {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+
+    .game-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .game-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(5, 9, 36, 0.78);
+      border: 1px solid rgba(255,255,255,0.14);
+      text-decoration: none;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+    }
+
+    .game-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 22px;
-      flex-wrap: wrap;
-      padding-bottom: 110px;
+      font-size: 22px;
     }
 
-    .salon-card {
-      width: 200px;
-      padding: 18px;
-      text-align: center;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.16);
-      backdrop-filter: blur(10px);
-      cursor: pointer;
-      transition: .25s;
-      box-shadow: 0 14px 32px rgba(0,0,0,0.35);
-    }
-    .salon-card:hover {
-      transform: scale(1.06);
+    .game-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .salon-card img {
-      width: 100%;
-      border-radius: 18px;
-    }
-
-    .salon-card div {
-      margin-top: 8px;
-      font-size: 17px;
+    .game-title {
+      font-size: 15px;
       font-weight: 600;
     }
 
-    /* ✅ Нижнее меню (как в бизнесах) */
+    .game-sub {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .game-tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,224,198,0.65);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .help-text {
+      margin-top: 14px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
       height: 70px;
       background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(18px);
       display: flex;
       justify-content: space-around;
       align-items: center;
       z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,0.14);
     }
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 12px;
-      color: #fff;
+      font-size: 11px;
+      color: #dfe9ff;
       text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
     }
 
-    .nav-item img { width: 28px; height: 28px; margin-bottom: 4px; }
-    .nav-item.active span { color: var(--accent); }
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item span {
+      opacity: 0.85;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
   </style>
 </head>
-
 <body>
+<div class="app-shell">
 
-  <div class="top-info">
-    <div class="info-box" id="balanceBox">Баланс: 0,00 ₽</div>
-  </div>
+  <header class="top-bar">
+    <div class="top-bar-row">
+      <div>
+        <div class="top-title">Развлечения</div>
+        <div class="top-subtitle">Мини-игры, которые приносят деньги в Empire</div>
+      </div>
+      <div class="balance-pill" id="topBalance">Баланс: 0.00 ₽</div>
+    </div>
+  </header>
 
-  <div class="page-title">Развлечения</div>
+  <main class="screen-content">
+    <div class="section-caption">Работа</div>
+    <div class="game-grid">
+      <a href="games/taxi.html" class="game-card">
+        <div class="game-icon">🚕</div>
+        <div class="game-main">
+          <div class="game-title">INFINITY GO</div>
+          <div class="game-sub">Такси · выполняй заказы по сменам</div>
+        </div>
+        <div class="game-tag">Играть</div>
+      </a>
 
-  <div class="salon-options">
+      <a href="games/courier.html" class="game-card">
+        <div class="game-icon">📦</div>
+        <div class="game-main">
+          <div class="game-title">I.Deliv</div>
+          <div class="game-sub">Курьер · доставка еды и посылок</div>
+        </div>
+        <div class="game-tag">Скоро</div>
+      </a>
 
-    <div class="salon-card" onclick="location.href='dealership/dealership.html'">
-      <img src="assets/fun/car.png">
-      <div>Автосалон</div>
+      <a href="games/loader.html" class="game-card">
+        <div class="game-icon">🏗️</div>
+        <div class="game-main">
+          <div class="game-title">Грузчик</div>
+          <div class="game-sub">Физический труд за стабильную оплату</div>
+        </div>
+        <div class="game-tag">Скоро</div>
+      </a>
+
+      <a href="games/cleaner.html" class="game-card">
+        <div class="game-icon">🧹</div>
+        <div class="game-main">
+          <div class="game-title">Клининг</div>
+          <div class="game-sub">Уборка, обслуживание, клиенты</div>
+        </div>
+        <div class="game-tag">Скоро</div>
+      </a>
     </div>
 
-    <div class="salon-card" onclick="location.href='dealership/usedcar.html'">
-      <img src="assets/fun/used.png">
-      <div>Б/У Авто</div>
-    </div>
+    <p class="help-text">
+      Все заработанные деньги из мини-игр автоматически попадают на ваш общий баланс
+      и доступны для улучшения основного заработка.
+    </p>
+  </main>
 
-    <div class="salon-card" onclick="location.href='dealership/moto.html'">
-      <img src="assets/fun/moto.png">
-      <div>Мотосалон</div>
-    </div>
+  <nav class="bottom-nav">
+    <a href="fun.html" class="nav-item active">
+      <img src="assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="business.html" class="nav-item">
+      <img src="assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="index.html" class="nav-item">
+      <img src="assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <img src="assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="settings.html" class="nav-item">
+      <img src="assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
 
-    <div class="salon-card" onclick="location.href='dealership/gai.html'">
-      <img src="assets/fun/gai.png">
-      <div>ГАИ</div>
-    </div>
-
-  </div>
-
-  <div class="bottom-nav">
-    <a href="fun.html" class="nav-item active"><img src="assets/fun.png"><span>Развлечения</span></a>
-    <a href="business.html" class="nav-item"><img src="assets/business.png"><span>Бизнесы</span></a>
-    <a href="index.html" class="nav-item"><img src="assets/earn.png"><span>Заработок</span></a>
-    <a href="profile.html" class="nav-item"><img src="assets/profile.png"><span>Профиль</span></a>
-    <a href="settings.html" class="nav-item"><img src="assets/settings.png"><span>Настройки</span></a>
-  </div>
+</div>
 
 <script>
   const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
-  function readRub(key){ return parseFloat(localStorage.getItem(key+'_rub')) || 0; }
-  function fmt(num){ return Number(num).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-  const currency = localStorage.getItem('currency') || '₽';
-  const balanceRub = readRub('balance');
-  const balance = (balanceRub * rates[currency]);
-  balanceBox.textContent = `Баланс: ${fmt(balance)} ${currency}`;
-</script>
 
+  function readRub(key) {
+    const raw = localStorage.getItem(key + '_rub');
+    return raw ? (parseFloat(raw) || 0) : 0;
+  }
+
+  function fmt(n) {
+    return Number(n).toLocaleString('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  let currency = localStorage.getItem('currency') || '₽';
+
+  function updateBalance() {
+    const balRub = readRub('balance');
+    const rate = rates[currency] || 1;
+    const el = document.getElementById('topBalance');
+    if (!el) return;
+    el.textContent = 'Баланс: ' + fmt(balRub * rate) + ' ' + currency;
+  }
+
+  updateBalance();
+</script>
 </body>
 </html>

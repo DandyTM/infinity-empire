@@ -1,246 +1,578 @@
 <!DOCTYPE html>
 <html lang="ru">
->
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>INFINITY Empire — Настройки</title>
   <style>
-    :root { --accent: #00e0c6; }
+    :root {
+      --accent: #00e0c6;
+      --bg-gradient: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+    }
+
     html, body {
       margin: 0;
+      padding: 0;
       height: 100%;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050816;
       color: #fff;
+      user-select: none;
     }
 
-    .top-info {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 18px; z-index: 1000;
-    }
-    .info-box {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 14px 28px;
-      font-size: 22px;
-      font-weight: 600;
-      color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.2);
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .content {
-      padding-top: 120px;
-      padding-bottom: 100px;
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+    }
+
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      }
+    }
+
+    /* Верхняя панель */
+    .top-bar {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
+      left: 0;
+      right: 0;
+      padding: 0 16px 4px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 30px;
-      text-align: center;
+      gap: 4px;
+      z-index: 1000;
     }
 
-    .currency-select {
+    .top-bar-row {
       display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
     }
-    .currency-btn {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 14px;
-      border: 2px solid transparent;
+
+    .top-title {
+      font-size: clamp(18px, 4.6vw, 22px);
+      font-weight: 700;
+    }
+
+    .top-subtitle {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    /* Большой блок баланса — как на главной */
+    .top-info {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 52px);
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      z-index: 900;
+    }
+
+    .info-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: clamp(13px, 3.5vw, 16px);
+      font-weight: 600;
       color: #fff;
-      font-size: 24px;
-      width: 60px; height: 60px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.25);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* Основное содержимое */
+    .screen-content {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 120px); /* ниже хедера и большого баланса */
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 16px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .card {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(5, 9, 36, 0.86);
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      opacity: 0.78;
+      margin-bottom: 10px;
+    }
+
+    /* ВЫБОР ВАЛЮТЫ — карточки, как на ПК-версии */
+    .currency-choices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .currency-card {
+      flex: 1 1 calc(50% - 8px);
+      min-width: 120px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(7, 11, 40, 0.9);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      outline: none;
+      color: #fff;
+      font-size: 13px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease, background 0.15s ease;
+    }
+
+    .currency-card:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    }
+
+    .currency-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(0,224,198,0.4), 0 8px 16px rgba(0,0,0,0.45);
+      background: radial-gradient(circle at top, rgba(0,224,198,0.25), rgba(7,11,40,0.95));
+    }
+
+    .currency-symbol {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.09);
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: .2s;
-    }
-    .currency-btn.active {
-      border-color: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
-      color: var(--accent);
-      transform: scale(1.1);
+      font-size: 18px;
+      font-weight: 700;
     }
 
-    .rates {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 16px 20px;
-      border: 1px solid rgba(255,255,255,0.2);
-      box-shadow: 0 0 10px rgba(0,0,0,0.25);
-      text-align: center;
-      font-size: 16px;
-      max-width: 380px;
-      width: 90%;
+    .currency-labels {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .rates table {
+    .currency-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .currency-desc {
+      font-size: 11px;
+      opacity: 0.75;
+    }
+
+    /* Таблица курсов валют */
+    .rates-title {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    .rate-table {
       width: 100%;
       border-collapse: collapse;
-      text-align: center;
-      margin-top: 10px;
-      font-size: 15px;
+      font-size: 12px;
+      margin-top: 4px;
     }
 
-    .rates th, .rates td {
-      padding: 6px;
+    .rate-table th,
+    .rate-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      text-align: left;
     }
 
-    .rates thead {
-      color: var(--accent);
+    .rate-table th {
+      font-size: 11px;
+      opacity: 0.75;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    .rates th:first-child {
-      color: var(--accent);
+    .rate-table td.code {
+      font-weight: 600;
     }
 
-    .reset-btn {
-      margin-top: 20px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 14px;
-      color: #fff;
-      font-size: 18px;
-      padding: 12px 30px;
+    .rate-table td.formula {
+      opacity: 0.9;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+
+    .toggle-row label {
       cursor: pointer;
-      transition: .2s;
-    }
-    .reset-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
     }
 
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
+    .toggle-row small {
+      display: block;
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .toggle-input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .danger-btn {
       width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: none;
+      background: #ff4b4b;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+    }
+
+    .danger-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .warning-text {
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: 0.75;
+    }
+
+    /* Нижняя навигация */
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
       height: 70px;
       background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(18px);
       display: flex;
       justify-content: space-around;
       align-items: center;
       z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,0.14);
     }
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 12px;
-      color: #fff;
+      font-size: 11px;
+      color: #dfe9ff;
       text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
     }
 
-    .nav-item img { width: 28px; height: 28px; margin-bottom: 4px; }
-    .nav-item.active span { color: var(--accent); }
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item span {
+      opacity: 0.85;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
   </style>
 </head>
 <body>
-  <!-- Верх -->
+<div class="app-shell">
+
+  <!-- Заголовок -->
+  <header class="top-bar">
+    <div class="top-bar-row">
+      <div>
+        <div class="top-title">Настройки</div>
+        <div class="top-subtitle">Управление валютой и прогрессом</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Большой баланс как на главной -->
   <div class="top-info">
-    <div class="info-box" id="balanceBox">Баланс: 0 ₽</div>
-    <div class="info-box" id="incomeBox">Доход за клик: 5 ₽</div>
+    <div class="info-box" id="balanceBox">Баланс: 0.00 ₽</div>
   </div>
 
-  <div class="content">
-    <h2>Выбор валюты</h2>
-    <div class="currency-select" id="currencySelect">
-      <div class="currency-btn" data-curr="₽">₽</div>
-      <div class="currency-btn" data-curr="₸">₸</div>
-      <div class="currency-btn" data-curr="$">$</div>
-      <div class="currency-btn" data-curr="€">€</div>
-    </div>
+  <!-- Контент -->
+  <main class="screen-content">
+    <section class="card">
+      <div class="card-title">Валюта отображения</div>
+      <div class="card-sub">
+        Внутренний баланс хранится в ₽, здесь меняется только то, как суммы
+        показываются в интерфейсе.
+      </div>
 
-    <div class="rates">
-      <h3>💱 Курсы валют</h3>
-      <table>
+      <!-- Выбор валюты карточками -->
+      <div class="currency-choices">
+        <button type="button" class="currency-card" data-currency="₽">
+          <div class="currency-symbol">₽</div>
+          <div class="currency-labels">
+            <div class="currency-name">Рубли</div>
+            <div class="currency-desc">Основная внутриигровая валюта</div>
+          </div>
+        </button>
+
+        <button type="button" class="currency-card" data-currency="₸">
+          <div class="currency-symbol">₸</div>
+          <div class="currency-labels">
+            <div class="currency-name">Тенге</div>
+            <div class="currency-desc">Отображение в KZT</div>
+          </div>
+        </button>
+
+        <button type="button" class="currency-card" data-currency="$">
+          <div class="currency-symbol">$</div>
+          <div class="currency-labels">
+            <div class="currency-name">Доллары</div>
+            <div class="currency-desc">Отображение в USD</div>
+          </div>
+        </button>
+
+        <button type="button" class="currency-card" data-currency="€">
+          <div class="currency-symbol">€</div>
+          <div class="currency-labels">
+            <div class="currency-name">Евро</div>
+            <div class="currency-desc">Отображение в EUR</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Таблица курсов -->
+      <div class="rates-title">Курсы валют (относительно ₽, внутриигровые):</div>
+      <table class="rate-table">
         <thead>
-          <tr>
-            <th></th>
-            <th>₽</th>
-            <th>₸</th>
-            <th>$</th>
-            <th>€</th>
-          </tr>
+        <tr>
+          <th>Валюта</th>
+          <th>Код</th>
+          <th>Курс</th>
+        </tr>
         </thead>
         <tbody>
-          <tr><th>₽</th><td>1</td><td>6.5</td><td>0.012</td><td>0.011</td></tr>
-          <tr><th>₸</th><td>0.15</td><td>1</td><td>0.0018</td><td>0.0017</td></tr>
-          <tr><th>$</th><td>83.3</td><td>555</td><td>1</td><td>0.92</td></tr>
-          <tr><th>€</th><td>91</td><td>606</td><td>1.09</td><td>1</td></tr>
+        <tr>
+          <td>Рубль</td>
+          <td class="code">RUB (₽)</td>
+          <td class="formula">1 ₽ = 1 ₽</td>
+        </tr>
+        <tr>
+          <td>Тенге</td>
+          <td class="code">KZT (₸)</td>
+          <td class="formula">1 ₽ ≈ 6.5 ₸</td>
+        </tr>
+        <tr>
+          <td>Доллар США</td>
+          <td class="code">USD ($)</td>
+          <td class="formula">1 ₽ ≈ 0.012 $</td>
+        </tr>
+        <tr>
+          <td>Евро</td>
+          <td class="code">EUR (€)</td>
+          <td class="formula">1 ₽ ≈ 0.011 €</td>
+        </tr>
         </tbody>
       </table>
-    </div>
+    </section>
 
-    <button class="reset-btn" id="resetBtn">Сбросить прогресс</button>
-  </div>
+    <section class="card">
+      <div class="card-title">Интерфейс</div>
 
-  <div class="bottom-nav">
-    <a href="fun.html" class="nav-item"><img src="assets/fun.png"><span>Развлечения</span></a>
-    <a href="business.html" class="nav-item"><img src="assets/business.png"><span>Бизнесы</span></a>
-    <a href="index.html" class="nav-item"><img src="assets/earn.png"><span>Заработок</span></a>
-    <a href="profile.html" class="nav-item"><img src="assets/profile.png"><span>Профиль</span></a>
-    <a href="settings.html" class="nav-item active"><img src="assets/settings.png"><span>Настройки</span></a>
-  </div>
+      <div class="toggle-row">
+        <label for="soundCheckbox">
+          Звук
+          <small>Озвучка кликов и событий (пока заглушка)</small>
+        </label>
+        <input id="soundCheckbox" type="checkbox" class="toggle-input">
+      </div>
 
-  <script>
-    const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
-    const incomePerClick={"₽":5,"₸":32.5,"$":0.06,"€":0.055};
+      <div class="toggle-row">
+        <label for="vibrationCheckbox">
+          Вибрация
+          <small>Лёгкий отклик при кликах (если устройство поддерживает)</small>
+        </label>
+        <input id="vibrationCheckbox" type="checkbox" class="toggle-input">
+      </div>
+    </section>
 
-    const balanceBox=document.getElementById('balanceBox');
-    const incomeBox=document.getElementById('incomeBox');
-    function readRub(k){return parseFloat(localStorage.getItem(k+'_rub'))||0;}
-    function writeRub(k,v){localStorage.setItem(k+'_rub',v);}
-    function fmt(n){return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});}
+    <section class="card">
+      <div class="card-title">Сброс прогресса</div>
+      <div class="card-sub">
+        Удалит все ваши данные: баланс, уровень клика, покупки и настройки.
+        Восстановить прогресс будет невозможно.
+      </div>
 
-    let currency=localStorage.getItem('currency')||'₽';
-    if(localStorage.getItem('balance_rub')===null)writeRub('balance',0);
-    if(localStorage.getItem('totalClickIncome_rub')===null)writeRub('totalClickIncome',0);
-    if(localStorage.getItem('totalEarned_rub')===null)writeRub('totalEarned',0);
+      <button id="resetProgressBtn" class="danger-btn">Сбросить прогресс</button>
 
-    function updateDisplay(){
-      const balanceRub=readRub('balance');
-      const displayBalance=balanceRub*rates[currency];
-      balanceBox.textContent=`Баланс: ${fmt(displayBalance)} ${currency}`;
-      incomeBox.textContent=`Доход за клик: ${fmt(incomePerClick[currency])} ${currency}`;
+      <div class="warning-text">
+        Рекомендуется перед сбросом убедиться, что вы точно не хотите продолжать
+        текущую игру.
+      </div>
+    </section>
+  </main>
+
+  <!-- Нижняя навигация -->
+  <nav class="bottom-nav">
+    <a href="fun.html" class="nav-item">
+      <img src="assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="business.html" class="nav-item">
+      <img src="assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="index.html" class="nav-item">
+      <img src="assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <img src="assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="settings.html" class="nav-item active">
+      <img src="assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
+
+</div>
+
+<script>
+  const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+
+  function readRub(key) {
+    const raw = localStorage.getItem(key + '_rub');
+    return raw ? (parseFloat(raw) || 0) : 0;
+  }
+
+  function fmt(n) {
+    return Number(n).toLocaleString('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  let currency = localStorage.getItem('currency') || '₽';
+
+  function updateBalance() {
+    const balRub = readRub('balance');
+    const rate = rates[currency] || 1;
+    const box = document.getElementById('balanceBox');
+    if (box) {
+      box.textContent = 'Баланс: ' + fmt(balRub * rate) + ' ' + currency;
     }
-    updateDisplay();
+  }
 
-    const buttons=document.querySelectorAll('.currency-btn');
-    function setActive(curr){buttons.forEach(b=>b.classList.toggle('active',b.dataset.curr===curr));}
-    setActive(currency);
+  updateBalance();
 
-    buttons.forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const newCurr=btn.dataset.curr;
-        if(newCurr===currency)return;
-        currency=newCurr;
-        localStorage.setItem('currency',currency);
-        setActive(currency);
-        updateDisplay();
-      });
+  /* Выбор валюты карточками */
+  const currencyCards = document.querySelectorAll('.currency-card');
+
+  function applyCurrencyActive() {
+    currencyCards.forEach(card => {
+      const cur = card.getAttribute('data-currency');
+      if (cur === currency) card.classList.add('active');
+      else card.classList.remove('active');
     });
+  }
 
-    document.getElementById('resetBtn').addEventListener('click',()=>{
-      if(confirm('Вы уверены, что хотите сбросить весь прогресс? Это удалит профиль, баланс и статистику.')){
-        localStorage.clear();
-        writeRub('balance',0);
-        writeRub('totalClickIncome',0);
-        writeRub('totalEarned',0);
-        localStorage.setItem('currency','₽');
-        alert('Прогресс сброшен! При следующем входе появится окно регистрации.');
-        location.reload();
-      }
+  applyCurrencyActive();
+
+  currencyCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const cur = card.getAttribute('data-currency');
+      if (!cur) return;
+      currency = cur;
+      localStorage.setItem('currency', currency);
+      applyCurrencyActive();
+      updateBalance();
     });
-  </script>
+  });
+
+  /* Тумблеры интерфейса */
+  const soundCheckbox = document.getElementById('soundCheckbox');
+  const vibrationCheckbox = document.getElementById('vibrationCheckbox');
+
+  if (soundCheckbox) {
+    soundCheckbox.checked = localStorage.getItem('soundEnabled') !== '0';
+    soundCheckbox.addEventListener('change', () => {
+      localStorage.setItem('soundEnabled', soundCheckbox.checked ? '1' : '0');
+    });
+  }
+
+  if (vibrationCheckbox) {
+    vibrationCheckbox.checked = localStorage.getItem('vibrationEnabled') !== '0';
+    vibrationCheckbox.addEventListener('change', () => {
+      localStorage.setItem('vibrationEnabled', vibrationCheckbox.checked ? '1' : '0');
+    });
+  }
+
+  /* Сброс прогресса */
+  const resetBtn = document.getElementById('resetProgressBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      const sure = confirm('Точно сбросить весь прогресс? Это действие нельзя отменить.');
+      if (!sure) return;
+      localStorage.clear();
+      window.location.href = 'index.html';
+    });
+  }
+</script>
 </body>
 </html>

@@ -5,215 +5,363 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>INFINITY Empire — Профиль</title>
   <style>
-    :root { --accent: #00e0c6; }
+    :root {
+      --accent: #00e0c6;
+      --bg-gradient: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+    }
+
     html, body {
       margin: 0;
+      padding: 0;
       height: 100%;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050816;
       color: #fff;
-      overflow: hidden;
+      user-select: none;
     }
 
-    body.blur-active .page-content { filter: blur(8px); pointer-events: none; }
-
-    .top-info {
-      position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
+    body {
       display: flex;
-      gap: 18px;
+      justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+    }
+
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      }
+    }
+
+    .top-bar {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
+      left: 0;
+      right: 0;
+      padding: 0 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       z-index: 1000;
     }
-    .info-box {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 14px 28px;
-      font-size: 22px;
-      font-weight: 600;
-      box-shadow: 0 0 10px rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
 
-    .profile-container {
+    .top-bar-row {
       display: flex;
       justify-content: space-between;
-      padding: 120px 20px 100px;
-      height: calc(100% - 180px);
-      gap: 20px;
+      align-items: center;
+    }
+
+    .top-title {
+      font-size: clamp(18px, 4.6vw, 22px);
+      font-weight: 700;
+    }
+
+    .top-subtitle {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .balance-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(5, 9, 36, 0.8);
+      border: 1px solid rgba(255,255,255,0.22);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .screen-content {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 60px);
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 16px;
+      overflow-y: auto;
       box-sizing: border-box;
     }
 
-    .stats, .profile {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.2);
-      box-shadow: 0 0 10px rgba(0,0,0,0.25);
-      padding: 20px;
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
-    .stats { width: 70%; display: flex; flex-direction: column; }
-    .stats h2 { margin: 0 0 10px; }
-    .stats p { font-size: 18px; margin: 6px 0; color: rgba(255,255,255,0.9); }
-
-    .profile { width: 30%; text-align: center; position: relative; }
-    .profile img.avatar {
-      width: 110px; height: 110px; border-radius: 50%;
-      border: 3px solid var(--accent);
-      object-fit: cover; margin-bottom: 10px;
+    .avatar-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(5, 9, 36, 0.9);
+      border: 1px solid rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
     }
 
-    .edit-icon { position: absolute; top: 10px; right: 10px; width: 28px; cursor: pointer; }
+    .profile-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-    .ownership { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
-    .ownership img { width: 50px; height: 50px; opacity: 0.9; cursor:pointer; transition:.2s; }
-    .ownership img:hover { transform: scale(1.1); opacity:1; }
+    .profile-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .profile-tagline {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .input-row label {
+      font-size: 12px;
+      opacity: 0.78;
+    }
+
+    .input-row input {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(5, 9, 36, 0.9);
+      color: #fff;
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .input-row input::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .stat-card {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(5, 9, 36, 0.9);
+      border: 1px solid rgba(255,255,255,0.16);
+      font-size: 12px;
+    }
+
+    .stat-label {
+      opacity: 0.72;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .stat-caption {
+      font-size: 10px;
+      opacity: 0.65;
+      margin-top: 2px;
+    }
 
     .bottom-nav {
-      position: fixed; bottom: 0; width: 100%; height: 70px;
-      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
-      display: flex; justify-content: space-around; align-items: center;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
       z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,0.14);
     }
 
-    .nav-item { display:flex; flex-direction:column; align-items:center; font-size:12px; text-decoration:none; color:#fff; }
-    .nav-item img { width:28px; height:28px; margin-bottom:4px; }
-    .nav-item.active span { color: var(--accent); }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: #dfe9ff;
+      text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
+    }
 
-    .modal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; }
-    .modal-content { background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); padding:20px; border-radius:20px; text-align:center; max-width:350px; width:90%; }
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
 
-    .avatar-choice { display:flex; justify-content:center; gap:10px; margin:15px 0; }
-    .avatar-choice img { width:60px; height:60px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:.2s; }
-    .avatar-choice img.selected { border-color:var(--accent); transform:scale(1.1); }
+    .nav-item span {
+      opacity: 0.85;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
   </style>
 </head>
 <body>
+<div class="app-shell">
 
-<div class="page-content">
-  <div class="top-info">
-    <div class="info-box" id="balanceBox">Баланс: 0 ₽</div>
-  </div>
+  <header class="top-bar">
+    <div class="top-bar-row">
+      <div>
+        <div class="top-title">Профиль</div>
+        <div class="top-subtitle">Ваш аккаунт в INFINITY Empire</div>
+      </div>
+      <div class="balance-pill" id="topBalance">Баланс: 0.00 ₽</div>
+    </div>
+  </header>
 
-  <div class="profile-container">
-    <div class="stats" id="stats">
-      <h2>📊 Статистика</h2>
-      <p id="clicksCount"></p>
-      <p id="clickIncome"></p>
-      <p id="businessCount"></p>
-      <p id="propertyCount"></p>
-      <p id="vehicleCount"></p>
-      <p id="businessIncome"></p>
-      <p id="rentIncome"></p>
-      <p id="funIncome"></p>
-      <p id="totalEarned"></p>
+  <main class="screen-content">
+    <section class="profile-header">
+      <div class="avatar-circle" id="avatarLetter">∞</div>
+      <div class="profile-main">
+        <div class="profile-name" id="profileNameDisplay">Игрок</div>
+        <div class="profile-tagline">Начинающий предприниматель</div>
+      </div>
+    </section>
+
+    <div class="input-row">
+      <label for="playerName">Имя / никнейм</label>
+      <input id="playerName" type="text" maxlength="24"
+             placeholder="Введите, как к вам обращаться">
     </div>
 
-    <div class="profile">
-      <img src="assets/edit.png" class="edit-icon" id="editProfile">
-      <img id="avatarDisplay" class="avatar" src="assets/avatar1.png">
-      <h2 id="playerName"></h2>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Текущий баланс</div>
+        <div class="stat-value" id="statBalance">0.00 ₽</div>
+        <div class="stat-caption">Баланс с учётом выбранной валюты</div>
+      </div>
 
-      <div class="ownership">
-        <img src="assets/car.png" id="openGarage">
-        <img src="assets/plane.png">
-        <img src="assets/house.png">
+      <div class="stat-card">
+        <div class="stat-label">Уровень заработка</div>
+        <div class="stat-value" id="statLevel">Ур. 1</div>
+        <div class="stat-caption">Влияет на доход с клика</div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <div class="bottom-nav">
-    <a href="fun.html" class="nav-item"><img src="assets/fun.png"><span>Развлечения</span></a>
-    <a href="business.html" class="nav-item"><img src="assets/business.png"><span>Бизнесы</span></a>
-    <a href="index.html" class="nav-item"><img src="assets/earn.png"><span>Заработок</span></a>
-    <a href="profile.html" class="nav-item active"><img src="assets/profile.png"><span>Профиль</span></a>
-    <a href="settings.html" class="nav-item"><img src="assets/settings.png"><span>Настройки</span></a>
-  </div>
-</div>
+  <nav class="bottom-nav">
+    <a href="fun.html" class="nav-item">
+      <img src="assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="business.html" class="nav-item">
+      <img src="assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="index.html" class="nav-item">
+      <img src="assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="profile.html" class="nav-item active">
+      <img src="assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="settings.html" class="nav-item">
+      <img src="assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </nav>
 
-<!-- Регистрация -->
-<div class="modal" id="registrationModal">
-  <div class="modal-content">
-    <h3>Регистрация игрока</h3>
-    <input type="text" id="usernameInput" placeholder="Введите имя">
-    <div class="avatar-choice">
-      <img src="assets/avatar1.png" data-avatar="assets/avatar1.png">
-      <img src="assets/avatar2.png" data-avatar="assets/avatar2.png">
-      <img src="assets/avatar3.png" data-avatar="assets/avatar3.png">
-      <img src="assets/avatar4.png" data-avatar="assets/avatar4.png">
-    </div>
-    <button id="confirmRegistration">OK</button>
-  </div>
 </div>
 
 <script>
-const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
-function readRub(k){return parseFloat(localStorage.getItem(k+'_rub'))||0;}
-function fmt(n){return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});}
-const currency=localStorage.getItem('currency')||'₽';
+  const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
 
-function updateBalance(){
-  document.getElementById('balanceBox').textContent=`Баланс: ${fmt(readRub('balance')*rates[currency])} ${currency}`;
-}
+  function readRub(key) {
+    const raw = localStorage.getItem(key + '_rub');
+    return raw ? (parseFloat(raw) || 0) : 0;
+  }
 
-function updateStats(){
-  const garage = JSON.parse(localStorage.getItem("garage") || "[]");
-  document.getElementById('vehicleCount').textContent=`Транспортных средств: ${garage.length}`;
-  
-  document.getElementById('clicksCount').textContent=`Количество кликов: ${localStorage.getItem('totalClicks')||0}`;
-  document.getElementById('clickIncome').textContent=`Заработано кликами: ${fmt(readRub('totalClickIncome'))} ₽`;
-  document.getElementById('businessCount').textContent=`Количество бизнесов: ${localStorage.getItem('businessCount')||0}`;
-  document.getElementById('propertyCount').textContent=`Недвижимости: ${localStorage.getItem('propertyCount')||0}`;
-  document.getElementById('businessIncome').textContent=`Заработано в бизнесе: ${fmt(readRub('businessIncome'))} ₽`;
-  document.getElementById('rentIncome').textContent=`Заработано на аренде: ${fmt(readRub('rentIncome'))} ₽`;
-  document.getElementById('funIncome').textContent=`Заработано на развлечениях: ${fmt(readRub('funIncome'))} ₽`;
-  document.getElementById('totalEarned').textContent=`Общий заработок: ${fmt(readRub('totalEarned'))} ₽`;
-}
+  function fmt(n) {
+    return Number(n).toLocaleString('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
 
-updateBalance(); updateStats();
-setInterval(()=>{updateBalance();updateStats();},800);
+  let currency = localStorage.getItem('currency') || '₽';
 
-/* Переход в гараж */
-document.getElementById("openGarage").addEventListener("click",()=>{
-  location.href="garage.html";
-});
+  function updateBalance() {
+    const balRub = readRub('balance');
+    const rate = rates[currency] || 1;
+    const balanceText = 'Баланс: ' + fmt(balRub * rate) + ' ' + currency;
 
-/* Регистрация */
-const modal=document.getElementById('registrationModal');
-const nameInput=document.getElementById('usernameInput');
-const confirmBtn=document.getElementById('confirmRegistration');
-const avatars=document.querySelectorAll('.avatar-choice img');
-let selectedAvatar='assets/avatar1.png';
+    const pill = document.getElementById('topBalance');
+    if (pill) pill.textContent = balanceText;
 
-avatars.forEach(a=>{
-  a.addEventListener('click',()=>{
-    avatars.forEach(x=>x.classList.remove('selected'));
-    a.classList.add('selected');
-    selectedAvatar=a.dataset.avatar;
-  });
-});
+    const statBalance = document.getElementById('statBalance');
+    if (statBalance) statBalance.textContent = fmt(balRub * rate) + ' ' + currency;
+  }
 
-function openModal(){ modal.style.display='flex'; document.body.classList.add('blur-active'); }
-function closeModal(){ modal.style.display='none'; document.body.classList.remove('blur-active'); }
+  updateBalance();
 
-if(!localStorage.getItem('username')){ openModal(); }
-else{
-  document.getElementById('playerName').textContent=localStorage.getItem('username');
-  document.getElementById('avatarDisplay').src=localStorage.getItem('avatar')||'assets/avatar1.png';
-}
+  const nameInput = document.getElementById('playerName');
+  const avatarLetter = document.getElementById('avatarLetter');
+  const profileNameDisplay = document.getElementById('profileNameDisplay');
 
-confirmBtn.addEventListener('click',()=>{
-  const name=nameInput.value.trim()||'Игрок';
-  localStorage.setItem('username',name);
-  localStorage.setItem('avatar',selectedAvatar);
-  document.getElementById('playerName').textContent=name;
-  document.getElementById('avatarDisplay').src=selectedAvatar;
-  closeModal();
-});
+  const storedName = localStorage.getItem('playerName') || '';
+  if (nameInput) nameInput.value = storedName;
+
+  function applyName() {
+    const value = (nameInput?.value || '').trim();
+    const name = value || 'Игрок';
+    if (profileNameDisplay) profileNameDisplay.textContent = name;
+    if (avatarLetter) avatarLetter.textContent = name ? name[0].toUpperCase() : '∞';
+  }
+
+  applyName();
+
+  if (nameInput) {
+    nameInput.addEventListener('input', () => {
+      const value = nameInput.value.trim();
+      localStorage.setItem('playerName', value);
+      applyName();
+    });
+  }
+
+  const level = parseInt(localStorage.getItem('clickLevel') || '1', 10);
+  const statLevel = document.getElementById('statLevel');
+  if (statLevel) statLevel.textContent = 'Ур. ' + level;
 </script>
-
 </body>
 </html>
