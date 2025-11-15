@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ГАИ — Оформление номеров</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+@font-face {
+  font-family: 'GOST';
+  src: url('../assets/fonts/gost.ttf') format('truetype');
+}
+
+body { margin:0; font-family:Inter,Arial,sans-serif; background:#fff; color:#111; }
+
+.top-info { position:fixed; top:16px; left:16px; display:flex; align-items:center; gap:12px; z-index:10; }
+.back-arrow { width:30px; height:30px; cursor:pointer; }
+.info-box { background:#fffbe8; border-radius:10px; padding:6px 12px; font-weight:700; border:1px solid #0002; }
+
+.page-title { text-align:center; margin-top:80px; font-size:26px; font-weight:700; }
+
+.mini-list { width:94%; max-width:980px; margin:20px auto; display:flex; gap:16px; overflow-x:auto; padding-bottom:10px; }
+.mini-card {
+  min-width:140px; background:#fff; border-radius:18px; padding:10px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.18); cursor:pointer; transition:.25s; text-align:center;
+}
+.mini-card:hover { transform:scale(1.05); box-shadow:0 26px 70px rgba(0,0,0,0.36); }
+.mini-card.active { border:2px solid #111; }
+.mini-thumb { width:120px; height:72px; border-radius:14px; object-fit:cover; }
+
+.container { width:92%; max-width:980px; margin:10px auto; text-align:center; }
+.car-big { width:70%; max-width:600px; border-radius:12px; }
+
+.plate-wrap { display:inline-flex; background:#fff; border:3px solid #000; border-radius:4px; font-family:'GOST'; height:78px; overflow:hidden; }
+.plate-left { display:flex; align-items:center; gap:6px; padding:0 14px; }
+.plate-letter { font-size:54px; }
+.plate-nums { font-size:58px; letter-spacing:2px; }
+.plate-letters { display:flex; gap:6px; font-size:48px; }
+
+.plate-region { display:flex; flex-direction:column; align-items:center; justify-content:center; border-left:3px solid #000; padding:4px 12px; }
+.region { font-size:32px; font-weight:700; }
+.row { display:flex; align-items:center; gap:4px; margin-top:3px; font-size:16px; }
+.flag { width:26px; height:14px; border:1px solid #000; background:linear-gradient(to bottom,#fff 33%,#0039A6 33% 66%,#D52B1E 66%); }
+
+.controls { display:flex; justify-content:center; gap:12px; margin-top:18px; }
+select { padding:8px 12px; border-radius:8px; border:1px solid #ddd; font-weight:600; }
+.btn { padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:700; transition:.2s; }
+.btn.main { background:#111; color:#fff; border:none; }
+.btn.main:disabled { background:#777; cursor:not-allowed; }
+.btn.alt { background:#fff; border:2px solid #111; }
+</style>
+</head>
+<body>
+
+<script src="../assets/js/bankNotify.js"></script>
+
+<div class="top-info">
+  <svg class="back-arrow" onclick="location.href='../fun.html'" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  <div class="info-box" id="balanceBox">Баланс: ...</div>
+</div>
+
+<div class="page-title">ГАИ — Оформление номеров</div>
+
+<div class="mini-list" id="miniList"></div>
+<div class="container" id="mainBox"></div>
+
+<script>
+function readRub(key){ return parseFloat(localStorage.getItem(key+"_rub"))||0; }
+function writeRub(key,val){ localStorage.setItem(key+"_rub",val); }
+function cur(){ return localStorage.getItem("currency")||"₽"; }
+const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+
+function updBal(){
+  const b = readRub("balance"), c = cur();
+  balanceBox.textContent = "Баланс: " + (b * rates[c]).toLocaleString("ru-RU") + " " + c;
+}
+updBal();
+
+let garage = JSON.parse(localStorage.getItem("garage")||"[]");
+if(!Array.isArray(garage)) garage=[];
+
+/* Полный список + вариации с 7 */
+let REGIONS = [
+"01","02","102","03","113","04","05","06","07","08","09","10","11","12","13","14","15",
+"16","116","716","17","18","19","20","95","21","22","23","93","123","24","84","88","124",
+"25","125","26","126","27","28","29","30","31","32","33","34","134","35","36","136","37",
+"38","138","39","91","40","41","42","142","43","44","45","46","47","147","48","49","50",
+"90","150","190","750","790","51","52","152","53","54","154","55","56","57","58","59",
+"159","60","61","161","62","63","163","763","64","164","65","66","96","67","68","69","70",
+"71","72","73","173","74","174","75","80","76","77","97","99","177","197","199","777","797","799",
+"78","98","178","198","79","83","86","186","87","89"
+];
+
+/* Названия */
+const REGION_NAMES = {
+"01":"Адыгея","02":"Башкортостан","102":"Башкортостан","03":"Бурятия","113":"Бурятия","04":"Алтай (Респ.)",
+"05":"Дагестан","06":"Ингушетия","07":"Кабардино-Балкария","08":"Калмыкия","09":"Карачаево-Черкессия",
+"10":"Карелия","11":"Коми","12":"Марий Эл","13":"Мордовия","14":"Саха (Якутия)","15":"Северная Осетия",
+"16":"Татарстан","116":"Татарстан","716":"Татарстан","17":"Тыва","18":"Удмуртия","19":"Хакасия",
+"20":"Чечня","95":"Чечня","21":"Чувашия","22":"Алтайский край",
+"23":"Краснодарский край","93":"Краснодарский край","123":"Краснодарский край",
+"24":"Красноярский край","84":"Красноярский край","88":"Красноярский край","124":"Красноярский край",
+"25":"Приморский край","125":"Приморский край","26":"Ставропольский край","126":"Ставропольский край",
+"27":"Хабаровский край","28":"Амурская область","29":"Архангельская область",
+"30":"Астраханская область","31":"Белгородская область","32":"Брянская область",
+"33":"Владимирская область","34":"Волгоградская область","134":"Волгоградская область",
+"35":"Вологодская область","36":"Воронежская область","136":"Воронежская область",
+"37":"Ивановская область","38":"Иркутская область","138":"Иркутская область",
+"39":"Калининградская область","91":"Калининградская область","40":"Калужская область",
+"41":"Камчатский край","42":"Кемеровская область","142":"Кемеровская область",
+"43":"Кировская область","44":"Костромская область","45":"Курганская область",
+"46":"Курская область","47":"Ленинградская область","147":"Ленинградская область",
+"48":"Липецкая область","49":"Магаданская область",
+"50":"Московская область","90":"Московская область","150":"Московская область","190":"Московская область","750":"Московская область","790":"Московская область",
+"51":"Мурманская область",
+"52":"Нижегородская область","152":"Нижегородская область",
+"53":"Новгородская область",
+"54":"Новосибирская область","154":"Новосибирская область",
+"55":"Омская область","56":"Оренбургская область","57":"Орловская область",
+"58":"Пензенская область","59":"Пермский край","159":"Пермский край",
+"60":"Псковская область","61":"Ростовская область","161":"Ростовская область",
+"62":"Рязанская область",
+"63":"Самарская область","163":"Самарская область","763":"Самарская область",
+"64":"Саратовская область","164":"Саратовская область",
+"65":"Сахалинская область","66":"Свердловская область","96":"Свердловская область",
+"67":"Смоленская область","68":"Тамбовская область","69":"Тверская область",
+"70":"Томская область","71":"Тульская область","72":"Тюменская область",
+"73":"Ульяновская область","173":"Ульяновская область",
+"74":"Челябинская область","174":"Челябинская область",
+"75":"Забайкальский край","80":"Забайкальский край",
+"76":"Ярославская область",
+"77":"Москва","97":"Москва","99":"Москва","177":"Москва","197":"Москва","199":"Москва","777":"Москва","797":"Москва","799":"Москва",
+"78":"Санкт-Петербург","98":"Санкт-Петербург","178":"Санкт-Петербург","198":"Санкт-Петербург",
+"79":"ЕАО","83":"Ненецкий АО",
+"86":"ХМАО","186":"ХМАО",
+"87":"Чукотский АО",
+"89":"ЯНАО"
+};
+
+REGIONS = REGIONS.sort((a,b)=>Number(a)-Number(b));
+
+let selected = 0;
+
+function list(){
+  miniList.innerHTML="";
+  garage.forEach((c,i)=>miniList.innerHTML+=`
+    <div class="mini-card ${i===selected?'active':''}" onclick="sel(${i})">
+      <img class="mini-thumb" src="../${c.image}">
+      <div style="font-weight:600;margin-top:6px">${c.brand} ${c.model}</div>
+    </div>`);
+}
+
+function plate(p){
+  const r=p.match(/^(.)(\d{3})(..)(\d+)$/);
+  return `
+  <div class="plate-wrap">
+    <div class="plate-left">
+      <div class="plate-letter">${r[1]}</div>
+      <div class="plate-nums">${r[2]}</div>
+      <div class="plate-letters"><span>${r[3][0]}</span><span>${r[3][1]}</span></div>
+    </div>
+    <div class="plate-region">
+      <div class="region">${r[4]}</div>
+      <div class="row"><span>RUS</span><div class="flag"></div></div>
+    </div>
+  </div>`;
+}
+
+function gen(reg){
+  const L="АВЕКМНОРСТУХ"; const used=garage.map(x=>x.plate).filter(Boolean);
+  function rnd(s){return s[Math.floor(Math.random()*s.length)];}
+  function num(){return String(Math.floor(Math.random()*999+1)).padStart(3,'0');}
+  let p; do{ p=rnd(L)+num()+rnd(L)+rnd(L)+reg; }while(used.includes(p));
+  return p;
+}
+
+function main(){
+  const c=garage[selected];
+  const savedRegion = localStorage.getItem("last_region") || "63";
+
+  mainBox.innerHTML=`
+    <img class="car-big" src="../${c.image}">
+    <div class="car-title">${c.brand} ${c.model}</div>
+    <div>${c.power||'-'} л.с.</div>
+    <div id="platePrev">${c.plate?plate(c.plate):'<div style="color:#777;margin-top:10px">Номер не оформлен</div>'}</div>
+
+    <div class="controls">
+      <select id="regSel">
+        ${REGIONS.map(r=>`<option value="${r}" ${r==savedRegion?'selected':''}>${r} — ${REGION_NAMES[r]}</option>`).join('')}
+      </select>
+
+      ${c.plate
+        ? `<button class="btn alt" id="re">Перебить (5000 ₽)</button>`
+        : `<button class="btn main" id="ap">Оформить (5000 ₽)</button>`
+      }
+    </div>
+  `;
+
+  regSel.onchange = ()=> localStorage.setItem("last_region", regSel.value);
+
+  if(!c.plate){
+    ap.onclick = ()=>{
+      if(readRub("balance")<5000) return showBankNotification(-5000,"Недостаточно средств ❌");
+      writeRub("balance",readRub("balance")-5000);
+      garage[selected].plate=gen(regSel.value);
+      localStorage.setItem("garage",JSON.stringify(garage));
+      updBal(); showBankNotification(-5000,"Номер оформлен ✅"); main();
+    };
+  } else {
+    re.onclick = ()=>{
+      if(readRub("balance")<5000) return showBankNotification(-5000,"Недостаточно средств ❌");
+      writeRub("balance",readRub("balance")-5000);
+      garage[selected].plate=gen(regSel.value);
+      localStorage.setItem("garage",JSON.stringify(garage));
+      updBal(); showBankNotification(-5000,"Номер перебит ✅"); main();
+    };
+  }
+}
+
+function sel(i){selected=i;list();main();}
+list();
+main();
+</script>
+</body>
+</html>

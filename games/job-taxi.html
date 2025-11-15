@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>INFINITY GO — Такси</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+:root{
+  --bg:#efefef;
+  --card:#fff;
+  --muted:#666;
+  --accent:#FFD200;
+  --text:#111;
+  --shadow: 0 10px 26px rgba(0,0,0,.18);
+}
+[data-theme="dark"]{
+  --bg:#0f0f11;
+  --card:#121214;
+  --muted:#bdbdbd;
+  --accent:#FFD200;
+  --text:#f7f7f7;
+  --shadow: 0 12px 36px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+}
+
+/* HEADER */
+.header{
+  position:fixed; top:0; left:0; right:0;
+  display:flex; align-items:center; justify-content:center;
+  padding:12px 18px; background:var(--card);
+  border-bottom:1px solid rgba(0,0,0,.06); z-index:1200;
+  box-shadow: var(--shadow);
+}
+.header img.logo{height:46px; display:block;}
+.header .left, .header .right{position:absolute; top:10px; display:flex; gap:10px; align-items:center;}
+.header .left{left:14px;}
+.header .right{right:14px;}
+
+/* RATING BOX */
+#ratingBox{
+  background:var(--card);
+  border-radius:10px;
+  padding:8px 10px;
+  font-size:14px;font-weight:700;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+  display:flex; flex-direction:column; align-items:flex-start;
+  gap:4px;
+  color:var(--text);
+}
+#levelSection {
+  background: var(--card);
+  padding: 12px 18px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+/* THEME TOGGLE */
+.theme-toggle{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px; border-radius:14px; cursor:pointer;
+}
+.switch{
+  width:46px; height:26px; border-radius:16px; display:inline-block; position:relative;
+  background:#222; border:2px solid rgba(0,0,0,.08);
+}
+.switch .knob{
+  position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
+  background:#fff; transition:all .18s ease;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+[data-theme="dark"] .switch{ background:var(--accent); border-color:rgba(0,0,0,.25); }
+[data-theme="dark"] .switch .knob{ left:22px; background:#111; }
+
+/* HEADER BUTTONS (always visible) */
+.header-btn{
+  background:var(--card); border:1px solid rgba(0,0,0,.08);
+  padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.08);
+  color:var(--text);
+}
+
+/* TASK PANEL */
+#taskPanel{
+  margin:86px auto 14px;
+  width:90%; max-width:720px;
+  background:var(--accent); color:#111;
+  padding:12px 16px; border-radius:14px; font-weight:700; text-align:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+/* ORDER LIST */
+#orderList{
+  padding:8px;
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  margin-bottom:200px;
+  max-width:980px; margin-left:auto; margin-right:auto;
+}
+
+/* ORDER CARD */
+.order-card{
+  width:92%; max-width:720px; background:var(--card); border-radius:14px;
+  padding:14px 18px; display:flex; justify-content:space-between; align-items:center;
+  cursor:pointer; box-shadow:var(--shadow); transition:transform .18s, box-shadow .18s;
+}
+.order-card:hover{ transform:translateY(-6px); box-shadow: 0 18px 50px rgba(0,0,0,.22); }
+.order-card .meta{opacity:.85; color:var(--muted); font-weight:600;}
+.take-btn{
+  background:var(--accent); border:none; padding:8px 14px; border-radius:10px; cursor:pointer; font-weight:700;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+/* ACTIVE ORDER (bottom) */
+#activeOrderBox{
+  position:fixed; left:0; right:0; bottom:18px;
+  margin:0 auto; width:94%; max-width:960px;
+  background:var(--card); padding:14px; border-radius:14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.28); display:none; z-index:1100;
+}
+#activeOrderBox .title{font-weight:800; margin-bottom:6px;}
+#roadWrapper{ position:relative; height:28px; background:rgba(0,0,0,.06); border-radius:999px; overflow:hidden;}
+#roadProgress{ height:100%; background:var(--accent); width:0%; transition: width .15s linear; border-radius:999px;}
+#carIcon{
+  position:absolute;
+  top:-9px; /* подняли выше */
+  left:0;
+  width:40px; /* уменьшили размер */ 
+  transform:scaleX(-1);
+  transition:left .15s linear;
+}
+
+
+/* NEXT ORDER */
+#nextOrderBox{ margin-top:10px; background: rgba(255, 208, 0, 0.9); padding:8px 12px; border-radius:10px; font-weight:700; }
+
+/* MODALS */
+.modal-back{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:2000;
+  backdrop-filter: blur(4px);
+}
+.modal{
+  width:92%; max-width:520px; border-radius:18px; background:var(--card); padding:16px; box-shadow:var(--shadow);
+}
+
+/* CAR CARD in modal */
+.car-card{
+  display:flex; gap:12px; align-items:center; padding:12px; border-radius:12px; background:rgba(0,0,0,0.03);
+  margin-bottom:12px; cursor:pointer;
+}
+.car-card img{ width:110px; height:70px; object-fit:cover; border-radius:10px; }
+
+/* SHIFT SUMMARY */
+.summary-row{ padding:8px 0; border-bottom:1px solid rgba(0,0,0,.06); font-weight:600; color:var(--muted); }
+
+/* PROFILE */
+#profileContent .profRow{ padding:8px 0; border-bottom:1px solid rgba(0,0,0,.06); }
+#profileContent .small{ color:var(--muted); font-size:13px; }
+
+/* small utilities */
+.hidden{ display:none; }
+.center{ text-align:center; }
+
+/* responsive */
+@media(max-width:640px){
+  #taskPanel{ width:94% }
+  .order-card{ width:95% }
+  #activeOrderBox{ width:96% }
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url("moscow.png") center/cover no-repeat;
+  filter: blur(8px) brightness(0.75);
+  z-index: -1;
+  pointer-events: none;
+  transition: background 0.4s ease, filter 0.4s ease;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] body::before {
+  background: url("moscow_night.png") center/cover no-repeat;
+  filter: blur(8px) brightness(0.45);
+}
+/* Тёмная тема — текст для блока следующего заказа */
+[data-theme="dark"] #nextOrderBox {
+  color: #000 !important;
+}
+[data-theme="dark"] #xpBarWrapper {
+  background: rgba(255,255,255,.25);
+}
+#statusRow {
+  width: 90%;
+  max-width: 900px;
+  margin: 86px auto 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+
+#levelBlock {
+  width: 270px;
+  background: var(--card);
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+
+#levelView {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+#xpBarWrapper {
+  width: 100%;
+  height: 8px;
+  background: rgba(0,0,0,.14);
+  border-radius: 8px;
+  overflow:hidden;
+  margin-bottom: 4px;
+}
+
+#xpBar {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width .25s;
+}
+
+#xpText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+}
+
+[data-theme="dark"] #xpBarWrapper {
+  background: rgba(255,255,255,.18);
+}
+#levelBlock {
+  position: fixed;
+  top: 78px; /* совпадает с низом header */
+  right: 18px;
+  width: 250px;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  z-index: 1500;
+}
+
+</style>
+</head>
+<body>
+
+<!-- rating + counters on top-left -->
+<div class="header">
+  <div class="left">
+    <div id="ratingBox">
+      <div id="ratingView">⭐ 0.00 (0)</div>
+      <div id="orderCountView" style="font-weight:600;color:var(--muted)">Заказов: 0</div>
+    </div>
+  </div>
+
+  <img class="logo" src="../icons/infinity_go.png" alt="INFINITY GO">
+
+  <div class="right">
+    <button id="openProfileBtn" class="header-btn">Профиль</button>
+    <button id="endShiftVisible" class="header-btn">Завершить смену</button>
+    <button id="exitVisible" class="header-btn">Выйти</button>
+
+    <div class="theme-toggle" id="themeToggle" title="Тема">
+      <div style="font-size:13px; font-weight:700;">Тема</div>
+      <div class="switch" id="themeSwitch"><div class="knob"></div></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="taskPanel">
+  🎯 Задание: Выполнить <span id="taskGoal">8</span> заказов 
+  (<span id="taskDone">0</span> / <span id="taskGoal2">8</span>) 
+  — награда: +<span id="taskReward">3000</span> ₽
+</div>
+<div id="levelBlock">
+  <div id="levelView">Уровень: 1</div>
+  <div id="xpBarWrapper">
+    <div id="xpBar"></div>
+  </div>
+  <div id="xpText">0 / 120 XP</div>
+</div>
+
+
+
+
+
+<!-- orders list -->
+<div id="orderList"></div>
+
+<!-- active order (bottom) -->
+<div id="activeOrderBox">
+  <div class="title">Активный заказ</div>
+  <div id="currentRoute" style="font-weight:700;margin-bottom:8px;"></div>
+
+  <div id="roadWrapper">
+    <div id="roadProgress"></div>
+    <img id="carIcon" src="../icons/taxi.png" alt="taxi">
+  </div>
+
+  <div id="currentKmText" style="margin-top:8px;color:var(--muted)"></div>
+  <div id="currentPayText" style="margin-top:6px;font-weight:800;"></div>
+  <div id="nextOrderBox" class="hidden" style="margin-top:10px;"></div>
+</div>
+
+<!-- CAR SELECT MODAL -->
+<div id="carModal" class="modal-back hidden">
+  <div class="modal">
+    <h3>Выбери авто для смены</h3>
+    <div id="carList"></div>
+    <button class="header-btn" id="rentBtn" style="margin-top:8px;background:var(--accent);">Арендовать авто</button>
+  </div>
+</div>
+
+<!-- RENT CAR MODAL -->
+<div id="rentModal" class="modal-back hidden">
+  <div class="modal">
+    <h3>Выбери машину для аренды</h3>
+
+    <div id="rentList" style="margin-top:10px;"></div>
+
+    <div class="center" style="margin-top:12px;">
+      <button class="header-btn" onclick="closeRentModal()" style="background:var(--accent);">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARK SELECT modal -->
+<div id="parkModal" class="modal-back hidden">
+  <div class="modal">
+    <h3>Выбери таксопарк</h3>
+    <div class="car-card" style="justify-content:space-between; cursor:pointer;" onclick="setPark(0.10)">INFINITY GO Стандарт — комиссия 10%</div>
+    <div class="car-card" style="justify-content:space-between; cursor:pointer;" onclick="setPark(0.20)">INFINITY GO Бизнес — комиссия 20% (больше дорогих заказов)</div>
+    <div class="car-card" style="justify-content:space-between; cursor:pointer;" onclick="setPark(0.00)">Чёрный парк — комиссия 0% (риск плохих отзывов)</div>
+  </div>
+</div>
+
+<!-- SHIFT SUMMARY -->
+<div id="shiftSummary" class="modal-back hidden">
+  <div class="modal" id="shiftSummaryContent">
+    <h2>Смена завершена</h2>
+    <div id="summaryList"></div>
+    <h3 style="margin-top:12px">Итого на баланс (после комиссии парка): <span id="sumTotal">0</span> ₽</h3>
+    <div class="center" style="margin-top:12px;"><button class="header-btn" onclick="closeShiftSummary()" style="background:var(--accent);">Ок</button></div>
+  </div>
+</div>
+
+<!-- PROFILE modal -->
+<div id="profileModal" class="modal-back hidden">
+  <div class="modal" id="profileContent">
+    <h2>Профиль таксиста</h2>
+    <div class="profRow"><b>Рейтинг:</b> <span id="profRating">⭐ 0.00 (0)</span></div>
+    <div class="profRow"><b>Выполнено заказов:</b> <span id="profOrders">0</span></div>
+    <div class="profRow"><b>Уровень:</b> <span id="profLvl">1</span></div>
+    <div class="profRow"><b>Опыт:</b> <span id="profXP">0</span></div>
+    <div class="profRow"><b>Всего заработано:</b> <span id="profMoney">0</span> ₽</div>
+    <div class="profRow"><b>Общий пробег:</b> <span id="profKm">0</span> км</div>
+    <h3 style="margin-top:12px;">Последние заказы</h3>
+    <div id="profHistory" style="max-height:200px; overflow-y:auto; margin-top:8px;"></div>
+    <h3 style="margin-top:12px;">Отзывы пассажиров</h3>
+    <div id="profReviews" style="max-height:160px; overflow-y:auto; margin-top:8px;"></div>
+
+    <div style="margin-top:12px;" class="center">
+      <button id="closeProfile" class="header-btn" style="background:var(--accent);">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* -------------------------
+  Persisted data in localStorage:
+  - ratingScore (sum of stars)
+  - ratingCount (count of ratings)
+  - completed_orders (int)
+  - total_km (number)
+  - total_earn (number)
+  - trips_history (array)
+  - reviews (array of {text,stars})
+  - theme ('light'|'dark')
+-------------------------*/
+
+/* THEME */
+(function(){
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light');
+  const switchEl = document.getElementById('themeSwitch');
+  if(saved === 'dark') document.querySelector('.switch .knob').style.left='22px';
+  document.getElementById('themeToggle').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', cur);
+    localStorage.setItem('theme', cur);
+    if(cur === 'dark') document.querySelector('.switch .knob').style.left='22px';
+    else document.querySelector('.switch .knob').style.left='2px';
+  };
+})();
+
+/* RATING and REVIEWS */
+let ratingScore = +localStorage.getItem('ratingScore') || 0;
+let ratingCount = +localStorage.getItem('ratingCount') || 0;
+let reviews = JSON.parse(localStorage.getItem('reviews')||'[]');
+
+function saveReviews(){ localStorage.setItem('reviews', JSON.stringify(reviews)); }
+function updateRatingUI(){
+  const avg = ratingCount>0 ? (ratingScore/ratingCount).toFixed(2) : '0.00';
+  document.getElementById('ratingView').textContent = `⭐ ${avg} (${ratingCount})`;
+  document.getElementById('orderCountView').textContent = 'Заказов: ' + (localStorage.getItem('completed_orders')||0);
+}
+updateRatingUI();
+
+/* add rating and an optional text review */
+function addRating(stars, text){
+  // if stars not provided, roll random
+  let s = stars || (Math.random()*100 < 78 ? 5 : Math.random()*100 < 92 ? 4 : Math.random()*100 < 97 ? 3 : Math.random()*100 < 99 ? 2 : 1);
+  ratingScore += s; ratingCount++;
+  localStorage.setItem('ratingScore', ratingScore);
+  localStorage.setItem('ratingCount', ratingCount);
+  if(text){
+    reviews.push({stars: s, text: text, time: Date.now()});
+    saveReviews();
+  } else {
+    // small chance to generate a short review comment
+    if(Math.random() < 0.45){
+      const sample = ["Отлично!", "Спасибо, все быстро", "Вежливый водитель", "Немного долго", "Не очень вежливо"];
+      const t = sample[Math.floor(Math.random()*sample.length)];
+      reviews.push({stars: s, text: t, time: Date.now()});
+      saveReviews();
+    }
+  }
+  updateRatingUI();
+}
+let level = +localStorage.getItem('driver_level') || 1;
+let xp = +localStorage.getItem('driver_xp') || 0;
+
+function saveLevel(){
+  localStorage.setItem('driver_level', level);
+  localStorage.setItem('driver_xp', xp);
+}
+
+function updateXPUI(){
+  // сколько XP нужно для следующего уровня
+  const need = level * 120;
+  const pct = Math.min((xp / need) * 100, 100);
+
+  document.getElementById('levelView').textContent = `Уровень: ${level}`;
+  document.getElementById('xpBar').style.width = pct + '%';
+  document.getElementById('xpText').textContent = `${xp} / ${need} XP`;
+}
+
+
+function addXP(amount){
+  xp += amount;
+
+  // XP для уровней: можно менять формулу
+  let need = level * 120; // чем выше уровень, тем сложнее
+
+  while(xp >= need){
+    xp -= need;
+    level++;
+    need = level * 120;
+
+    showEvent(`🎉 Новый уровень! Теперь у вас ${level} уровень`);
+
+    saveLevel();
+    updateProfileUI(); // если нужно обновлять профиль
+  }
+
+  saveLevel();
+  updateXPUI();
+
+}
+
+/* -------------------------
+  CAR / PARK / ORDERS logic
+-------------------------*/
+let garage = JSON.parse(localStorage.getItem('garage')||'[]');
+let selectedCar = null;
+let parkCommission = 0.10;
+
+function fixImg(p){
+  if(!p) return '../icons/car-placeholder.png';
+  if(p.startsWith('../')) return p;
+  return '../' + p;
+}
+function getNumericPrice(obj){
+  let v = obj && (obj.priceRub ?? obj.price ?? obj.priceRub ?? 0);
+  return parseFloat(v) || 0;
+}
+function getClassByPriceNumeric(price){
+  // thresholds: < 2_000_000 Эконом, <4_000_000 Комфорт, <8_000_000 Бизнес, иначе Премиум
+  price = Number(price) || 0;
+  if(price < 2000000) return 'Эконом';
+  if(price < 4000000) return 'Комфорт';
+  if(price < 8000000) return 'Бизнес';
+  return 'Премиум';
+}
+const rentCars = [
+  // Эконом
+  { brand: "Hyundai", model: "Solaris", cls:"Эконом", priceRub:700000, img:"solaris.png", rentCost: 700 },
+  { brand: "Kia", model: "Rio", cls:"Эконом", priceRub:750000, img:"kiario.png", rentCost: 750 },
+
+  // Комфорт
+  { brand: "VW", model: "Polo", cls:"Комфорт", priceRub:1200000, img:"polo.png", rentCost: 950 },
+  { brand: "Skoda", model: "Octavia", cls:"Комфорт", priceRub:1500000, img:"octavia.png", rentCost: 1100 },
+
+  // Бизнес
+  { brand: "Toyota", model: "Camry", cls:"Бизнес", priceRub:2500000, img:"camry.png", rentCost: 1700 },
+  { brand: "BMW", model: "320i", cls:"Бизнес", priceRub:3400000, img:"320i.png", rentCost: 2100 }
+];
+function openRentModal(){
+  document.getElementById('rentModal').classList.remove('hidden');
+  const box = document.getElementById('rentList');
+  box.innerHTML = '';
+
+  rentCars.forEach((c, i) => {
+
+    // Определяем требуемый уровень по классу
+    let requiredLevel = 1;
+    if(c.cls === 'Комфорт') requiredLevel = 3;
+    if(c.cls === 'Бизнес') requiredLevel = 6;
+    if(c.cls === 'Премиум') requiredLevel = 9;
+
+    const locked = level < requiredLevel;
+
+    box.innerHTML += `
+      <div class="car-card" 
+           style="opacity:${locked ? 0.45 : 1}; cursor:${locked ? 'not-allowed' : 'pointer'};" 
+           ${locked ? '' : `onclick="rentSelect(${i})"`}>
+        <img src="${c.img}" alt="car">
+        <div>
+          <div style="font-weight:800">${c.brand} ${c.model}</div>
+          <div class="small">Класс: ${c.cls}</div>
+          <div class="small">Аренда: ${c.rentCost} ₽ / смена</div>
+          ${locked ? `<div style="color:#ff4444;font-weight:700;margin-top:6px;">Требуется уровень ${requiredLevel}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+}
+
+
+function closeRentModal(){
+  document.getElementById('rentModal').classList.add('hidden');
+}
+
+function rentSelect(i){
+  selectedCar = { ...rentCars[i], rented: true, mileage: 0 };
+  closeRentModal();
+  document.getElementById('carModal').classList.add('hidden');
+  openParkModal();
+}
+
+/* CAR SELECT UI */
+function openCarModal(){
+  document.getElementById('carModal').classList.remove('hidden');
+  const box = document.getElementById('carList');
+  box.innerHTML = '';
+
+  if(garage.length === 0){
+    box.innerHTML = '<div style="padding:14px;color:var(--muted)">Гараж пуст — можно арендовать авто</div>';
+    return;
+  }
+
+  garage.forEach((c,i)=>{
+
+    const price = getNumericPrice(c);
+    const cls = getClassByPriceNumeric(price);
+
+    // Требуемый уровень для каждого класса
+    let requiredLevel = 1;
+    if(cls === 'Комфорт') requiredLevel = 3;
+    if(cls === 'Бизнес') requiredLevel = 6;
+    if(cls === 'Премиум') requiredLevel = 9;
+
+    const locked = level < requiredLevel;
+
+    box.innerHTML += `
+      <div class="car-card" 
+           style="opacity:${locked ? 0.45 : 1}; cursor:${locked ? 'not-allowed' : 'pointer'};" 
+           ${locked ? '' : `onclick="selectCar(${i})"`}>
+        <img src="${fixImg(c.img||c.image||c.photo)}" alt="car">
+        <div>
+          <div style="font-weight:800">${(c.brand??'') + (c.model ? ' ' + c.model : '')}</div>
+          <div class="small">Класс: ${cls}</div>
+          <div class="small">Пробег: ${Math.round(c.mileage||0)} км</div>
+          ${locked ? `<div style="color:#ff4444;font-weight:700;margin-top:6px;">Требуется уровень ${requiredLevel}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+}
+document.getElementById('rentBtn').onclick = () => {
+  openRentModal();
+};
+
+
+function selectCar(i){
+  selectedCar = garage[i];
+  document.getElementById('carModal').classList.add('hidden');
+  openParkModal();
+}
+
+/* PARK selection */
+function openParkModal(){ document.getElementById('parkModal').classList.remove('hidden'); }
+function setPark(c){
+  parkCommission = c;
+  const modal = document.getElementById('parkModal');
+  modal.classList.add('hidden');
+  modal.style.display = 'none';    // ← ВОТ ЭТО ГЛАВНОЕ
+  startOrders();
+}
+
+
+/* Task panel */
+let taskGoal = 0;
+let taskDone = 0;
+let taskReward = 0;
+
+function generateNewTask(){
+  // Генерируем количество заказов: от 5 до 12
+  taskGoal = Math.floor(Math.random()*8) + 5; // 5–12
+  taskDone = 0;
+
+  // Генерируем награду: 2000–6000 с небольшим разбросом
+  taskReward = (Math.floor(Math.random()*5)+2) * 1000;
+
+  updateTaskUI();
+}
+
+function updateTaskUI(){
+  document.getElementById('taskGoal').textContent = taskGoal;
+  document.getElementById('taskGoal2').textContent = taskGoal;
+  document.getElementById('taskDone').textContent = taskDone;
+}
+
+
+/* Order generation */
+const streets = ["Тверская","Арбат","Сретенка","Бауманская","Лубянка","Проспект Мира","Садовая","Лубянская"];
+function addr(){ return streets[Math.floor(Math.random()*streets.length)] + ' ' + (10 + Math.floor(Math.random()*90)); }
+
+function makeOrder(){
+  const from = addr();
+  const to = addr();
+  const baseDist = +(Math.random()*6 + 2).toFixed(1);
+
+  const priceNum = getNumericPrice(selectedCar);
+  const cls = getClassByPriceNumeric(priceNum);
+
+  // базовые шансы
+  let vipChance = 0.08;     // 8%
+  let airportChance = 0.04; // 4%
+
+  // усиливаем в зависимости от класса авто
+  if(cls === 'Комфорт'){
+    vipChance += 0.04;      // +4%
+  }
+  if(cls === 'Бизнес'){
+    vipChance += 0.08;      // +8%
+    airportChance += 0.04;  // +4%
+  }
+  if(cls === 'Премиум'){
+    vipChance += 0.12;      // +12%
+    airportChance += 0.12;  // +12%
+  }
+
+  function calcPay(dist){
+    if(cls === 'Эконом') return Math.round(90 + dist*35);
+    if(cls === 'Комфорт') return Math.round(150 + dist*55);
+    if(cls === 'Бизнес') return Math.round(250 + dist*85);
+    return Math.round(420 + dist*130); // Премиум
+  }
+
+
+// VIP
+if(Math.random() < vipChance){
+  const dist = baseDist + Math.random()*4;
+  return {
+    A: from, B: to,
+    dist: +dist.toFixed(1),
+    pay: calcPay(dist) * 2,
+    vip: true,
+    cls
+  };
+}
+
+// АЭРОПОРТ
+if(Math.random() < airportChance){
+  const dist = 15 + Math.random()*15; // 15–30 км
+  return {
+    A: "Аэропорт", B: to,
+    dist: +dist.toFixed(1),
+    pay: calcPay(dist),
+    airport: true,
+    cls
+  };
+}
+
+
+  // обычный заказ
+  return { A: from, B: to, dist: baseDist, pay: calcPay(baseDist) };
+}
+
+
+/* Orders list handling */
+let orderList = [];
+function drawOrders(){
+  const box = document.getElementById('orderList');
+  box.innerHTML = '';
+
+  orderList.forEach((o, i) => {
+
+    // XP preview (та же формула, но только показать!)
+    let xpPreview = 10 + o.dist * 2;
+    if(o.cls === 'Комфорт') xpPreview = 14 + o.dist * 3;
+    if(o.cls === 'Бизнес') xpPreview = 20 + o.dist * 3.5;
+    if(o.cls === 'Премиум') xpPreview = 30 + o.dist * 4;
+    if(o.airport) xpPreview += 25;
+    if(o.vip) xpPreview *= 1.8;
+    xpPreview = Math.round(xpPreview);
+
+    let label = "";
+    if(o.vip) label = `<span style="background:#ffdd00;padding:3px 7px;border-radius:6px;font-weight:800;color:#111;margin-right:8px;">VIP</span>`;
+    if(o.airport) label = `<span style="background:#007bff;padding:3px 7px;border-radius:6px;font-weight:800;color:#fff;margin-right:8px;">✈ Аэропорт</span>`;
+
+    const el = document.createElement('div');
+    el.className = 'order-card';
+    el.innerHTML = `
+      <div>
+        <div style="font-weight:800;">${label}${o.A} → ${o.B}</div>
+        <div class="meta">${o.dist} км · ${o.pay} ₽ · +${xpPreview} XP · ${o.cls || ''}</div>
+      </div>
+      <div>
+        <button class="take-btn" onclick="takeOrder(${i})">Взять</button>
+      </div>
+    `;
+    box.appendChild(el);
+  });
+}
+
+
+
+function refreshOrders(){
+  try{
+    if(orderList.length < 4) orderList.push(makeOrder());
+    playSound();
+    drawOrders();
+  }catch(e){ console.error('refreshOrders error', e); }
+}
+
+/* Order taking / queue logic (max 1 queue) */
+let current = null;
+let queue = null;
+let animationHandle = null;
+let completedTrips = JSON.parse(localStorage.getItem('trips_history')||'[]');
+let shiftEarn = 0;
+
+function takeOrder(i){
+  const o = orderList.splice(i,1)[0];
+  drawOrders();
+  if(current){
+    if(queue){ alert('Уже есть заказ в ожидании.'); return; }
+    queue = o; updateQueueUI(); return;
+  }
+  startTrip(o);
+}
+
+function updateQueueUI(){
+  const nbox = document.getElementById('nextOrderBox');
+  if(queue){
+    nbox.classList.remove('hidden');
+    nbox.textContent = 'Следующий заказ: ' + queue.A + ' → ' + queue.B;
+  } else {
+    nbox.classList.add('hidden');
+  }
+}
+
+/* Random events: affect rating, tips, speed */
+function randomEvent(){
+  const r = Math.random()*100;
+  if(r < 12) return 'traffic';
+  if(r < 22) return 'rain';
+  if(r < 36) return 'tips';
+  if(r < 44) return 'angry';
+  return 'none';
+}
+
+function showEvent(msg){
+  const d = document.createElement('div');
+  d.style.position='fixed';
+  d.style.bottom='140px';
+  d.style.left='50%';
+  d.style.transform='translateX(-50%)';
+  d.style.background='var(--card)';
+  d.style.color='var(--text)';
+  d.style.padding='10px 14px';
+  d.style.borderRadius='12px';
+  d.style.boxShadow='0 8px 26px rgba(0,0,0,.18)';
+  d.style.fontWeight='700';
+  d.style.zIndex='2002';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),2200);
+}
+
+/* Trip logic (smooth animation using requestAnimationFrame) */
+function startTrip(o){
+  current = o;
+  document.getElementById('activeOrderBox').style.display = 'block';
+  document.getElementById('currentRoute').textContent = o.A + ' → ' + o.B;
+  document.getElementById('currentPayText').textContent = o.pay + ' ₽';
+  updateQueueUI();
+
+  const event = randomEvent();
+  let speedFactor = 1;
+  if(event === 'traffic'){ speedFactor = 0.6; showEvent('🚧 Пробка — едем медленнее'); }
+  else if(event === 'rain'){ showEvent('☔ Идёт дождь — повешенный шанс положительного отзыва'); }
+  else if(event === 'tips'){ const tip = (50 + Math.floor(Math.random()*400)); o.pay += tip; showEvent('💸 Чаевые: +' + tip + ' ₽'); }
+  else if(event === 'angry'){ showEvent('😠 Клиент недоволен — шанс снижения оценки'); }
+
+  // Базовое время зависит от расстояния: ~1.2 сек за км + минимум
+let baseTime = o.dist * 1200; // 1.2 секунды на каждый километр
+const durationMs = Math.max(3000, Math.round(baseTime / speedFactor));
+
+  const start = performance.now();
+  function frame(now){
+    const progress = Math.min((now - start) / durationMs, 1);
+    document.getElementById('roadProgress').style.width = (progress * 100) + '%';
+    document.getElementById('carIcon').style.left = `calc(${progress * 100}% - 28px)`;
+    document.getElementById('currentKmText').textContent = `Прогресс: ${ (o.dist * progress).toFixed(1) } / ${o.dist} км`;
+    if(progress < 1) animationHandle = requestAnimationFrame(frame);
+    else {
+      cancelAnimationFrame(animationHandle);
+      finishTrip(o, event);
+    }
+  }
+  animationHandle = requestAnimationFrame(frame);
+}
+
+/* Finish trip */
+function finishTrip(o, event){
+  // Выполнено для задания
+  taskDone++;
+  updateTaskUI();
+
+  // Проверка выполнения задания (награда за выполнение)
+  if(taskDone >= taskGoal){
+    const bal = +localStorage.getItem('balance_rub') || 0;
+    localStorage.setItem('balance_rub', bal + taskReward);
+    showEvent(`🎉 Задание выполнено! +${taskReward} ₽`);
+    generateNewTask();
+  }
+
+  // Общие статистики игрока
+  const prevOrders = +localStorage.getItem('completed_orders') || 0;
+  localStorage.setItem('completed_orders', prevOrders + 1);
+
+  const prevKm = +localStorage.getItem('total_km') || 0;
+  localStorage.setItem('total_km', (prevKm + o.dist));
+
+  const prevEarn = +localStorage.getItem('total_earn') || 0;
+  localStorage.setItem('total_earn', (prevEarn + o.pay));
+
+  // Пробег автомобиля, если не аренда
+  if(selectedCar && !selectedCar.rented){
+    selectedCar.mileage = (selectedCar.mileage || 0) + o.dist;
+    localStorage.setItem('garage', JSON.stringify(garage));
+  }
+
+  // ✅ Записать заработок за смену
+  shiftEarn += o.pay;
+
+  // ✅ Сохранить поездку в историю
+  completedTrips.push(o);
+  localStorage.setItem('trips_history', JSON.stringify(completedTrips));
+
+  // Обновление рейтинга (мягче)
+  let stars;
+  if(event === 'angry'){
+    stars = Math.random() < 0.4 ? 3 : 4;
+  } else if(event === 'rain'){
+    stars = 5;
+  } else {
+    stars = Math.random() < 0.75 ? 5 : 4;
+  }
+  addRating(stars);
+
+  // Скрываем активный заказ
+  current = null;
+  document.getElementById('activeOrderBox').style.display = 'none';
+  document.getElementById('roadProgress').style.width = '0%';
+  document.getElementById('carIcon').style.left = '0';
+
+  // Если есть заказ в очереди — начинаем его
+  if(queue){
+    const next = queue;
+    queue = null;
+    updateQueueUI();
+    setTimeout(()=> startTrip(next), 300);
+  }
+
+  // Обновить список заказов
+  if(orderList.length < 4) refreshOrders();
+  // XP за заказ — зависит от класса и типа
+let baseXP = 10 + o.dist * 2; // Эконом по умолчанию
+
+if(o.cls === 'Комфорт') baseXP = 14 + o.dist * 3;
+if(o.cls === 'Бизнес') baseXP = 20 + o.dist * 3.5;
+if(o.cls === 'Премиум') baseXP = 30 + o.dist * 4;
+
+if(o.airport) baseXP += 25; // Аэропорт бонус
+if(o.vip) baseXP *= 1.8; // VIP множитель
+
+addXP(Math.round(baseXP));
+
+}
+
+
+/* Play sound when new order appears */
+function playSound(){
+  try{ new Audio('yandex.mp3').play().catch(()=>{}); }catch(e){}
+}
+
+/* END SHIFT: compute park commission, add to balance, show summary */
+document.getElementById('endShiftVisible').onclick = endShift;
+function endShift(){
+  // compute payout after park commission
+  const final = Math.round(shiftEarn * (1 - parkCommission));
+  // add task reward if completed taskGoal
+  if(taskDone >= taskGoal){
+    localStorage.setItem('balance_rub', (+localStorage.getItem('balance_rub') || 0) + 3000);
+  }
+  // add final
+  const prevBal = +localStorage.getItem('balance_rub') || 0;
+  localStorage.setItem('balance_rub', prevBal + final);
+  // display summary
+  const box = document.getElementById('summaryList');
+  box.innerHTML = '';
+  completedTrips.forEach(t=>{
+    box.innerHTML += `<div class="summary-row">${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽</div>`;
+  });
+  document.getElementById('sumTotal').textContent = final + (taskDone >= taskGoal ? 3000 : 0);
+  // reset session shift earn and completedTrips for next shift
+  shiftEarn = 0;
+  completedTrips = [];localStorage.setItem('trips_history', JSON.stringify([]));
+
+  document.getElementById('shiftSummary').classList.remove('hidden');
+}
+
+/* Close summary */
+function closeShiftSummary(){ 
+  document.getElementById('shiftSummary').classList.add('hidden');
+  setTimeout(() => {
+    location.reload();
+  }, 200);
+}
+
+
+/* PROFILE modal open / close */
+document.getElementById('openProfileBtn').onclick = function(){
+  const ratingAvg = ratingCount>0 ? (ratingScore / ratingCount).toFixed(2) : '0.00';
+  document.getElementById('profRating').textContent = `⭐ ${ratingAvg} (${ratingCount})`;
+  document.getElementById('profOrders').textContent = localStorage.getItem('completed_orders') || 0;
+  document.getElementById('profLvl').textContent = level;
+  document.getElementById('profXP').textContent = xp;
+  document.getElementById('profMoney').textContent = localStorage.getItem('total_earn') || 0;
+  document.getElementById('profKm').textContent = Math.round(+localStorage.getItem('total_km') || 0);
+  // history
+  const hist = JSON.parse(localStorage.getItem('trips_history') || '[]');
+  const hbox = document.getElementById('profHistory'); hbox.innerHTML = '';
+  hist.slice(-12).reverse().forEach(t => {
+    hbox.innerHTML += `<div class="profRow">${t.A} → ${t.B} • ${t.dist} км • ${t.pay} ₽</div>`;
+  });
+  // reviews
+  const rev = JSON.parse(localStorage.getItem('reviews') || '[]');
+  const rbox = document.getElementById('profReviews'); rbox.innerHTML = '';
+  if(rev.length === 0) rbox.innerHTML = '<div class="small">Отзывы отсутствуют</div>';
+  else rev.slice(-20).reverse().forEach(r=>{
+    rbox.innerHTML += `<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)"><b>⭐ ${r.stars}</b> <div class="small">${r.text}</div></div>`;
+  });
+  document.getElementById('profileModal').classList.remove('hidden');
+};
+document.getElementById('closeProfile').onclick = function(){ document.getElementById('profileModal').classList.add('hidden'); };
+
+/* EXIT button */
+document.getElementById('exitVisible').onclick = function(){ location.href = '../business.html'; };
+
+/* Menu items (keep if needed) */
+document.getElementById('endShiftVisible').title = 'Завершить смену и получить деньги';
+document.getElementById('exitVisible').title = 'Выйти из режима такси';
+
+/* START flow */
+function startOrders(){
+  // ensure selectedCar exists (if user didn't select, open car modal)
+  if(!selectedCar){
+    openCarModal();
+    return;
+  }
+  // initial fill
+  generateNewTask();
+
+  refreshOrders();
+  // periodic generator
+  setInterval(()=> {
+    if(orderList.length < 4) {
+      orderList.push(makeOrder());
+      playSound();
+      drawOrders();
+    }
+  }, 12000);
+}
+
+/* initial setup: show car modal */
+openCarModal();
+
+/* ensure UI counters updated */
+updateRatingUI();
+updateTaskUI();
+updateQueueUI();
+updateXPUI();
+
+
+</script>
+</body>
+</html>

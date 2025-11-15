@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFINITY Empire — Заработок</title>
+
+  <style>
+    :root {
+      --accent: #00e0c6;
+      --bg-gradient: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050816;
+      color: #fff;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* “Корпус” мобильного приложения */
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px); /* под нижнюю навигацию */
+    }
+
+    /* На десктопе показываем как телефон в рамке */
+    @media (min-width: 600px) {
+      .app-shell {
+        margin: 12px auto;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      }
+    }
+
+    /* Splash */
+    .splash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.18) 0, transparent 55%), #0b172e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .splash img {
+      max-width: 60%;
+      width: 170px;
+    }
+
+    /* Верхняя панель с балансом / доходом */
+    .top-info {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      z-index: 1000;
+    }
+
+    .info-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: clamp(13px, 3.5vw, 16px);
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.25);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* ПАНЕЛЬ ПРОКАЧКИ */
+    .upgrade-panel {
+      width: auto;
+      max-width: none;
+      background: rgba(9, 12, 41, 0.55);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 12px 14px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+
+      position: absolute;
+      top: 80px;
+      left: 16px;
+      right: 16px;
+      z-index: 900;
+    }
+
+    .upgrade-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .upgrade-cost {
+      text-align: right;
+      font-size: 14px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+      padding-right: 2px;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.22);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 8px;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.45s ease;
+    }
+
+    .upgrade-btn {
+      width: 100%;
+      padding: 11px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+      box-shadow: 0 6px 16px rgba(0, 224, 198, 0.45);
+    }
+
+    .upgrade-btn:active:not(.disabled) {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 3px 10px rgba(0, 224, 198, 0.35);
+    }
+
+    .upgrade-btn.disabled {
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.6);
+      cursor: default;
+      box-shadow: none;
+    }
+
+    /* ЗОНА КЛИКА */
+    .click-area {
+      position: absolute;
+      top: 180px;
+      bottom: 90px;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      padding: 0 24px;
+      text-align: center;
+    }
+
+    .click-area img {
+      width: clamp(110px, 32vw, 150px);
+      transition: transform 0.1s;
+      pointer-events: none;
+    }
+
+    .click-text {
+      margin-top: 16px;
+      font-size: clamp(14px, 3.3vw, 17px);
+      opacity: 0.88;
+    }
+
+    .floating-text {
+      position: absolute;
+      color: #00e0c6;
+      font-weight: bold;
+      pointer-events: none;
+      animation: floatUp2 0.9s ease-out forwards;
+      font-size: 14px;
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
+      z-index: 1200;
+    }
+
+    @keyframes floatUp2 {
+      0% { opacity: 1; transform: translateY(0) translateX(0); }
+      100% { opacity: 0; transform: translateY(-60px) translateX(25px); }
+    }
+
+    /* Вспышка вокруг руки */
+    .click-flash {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(0, 224, 198, 0.35);
+      filter: blur(20px);
+      transform: scale(0);
+      opacity: 0;
+      pointer-events: none;
+      animation: flash 0.45s ease-out forwards;
+      z-index: 5;
+    }
+
+    @keyframes flash {
+      0% { transform: scale(0.4); opacity: 0.9; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    /* Пружина руки */
+    .hand-bounce {
+      transform: scale(1.12);
+    }
+
+    /* Нижняя панель (mobile-app style) */
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: env(safe-area-inset-bottom, 0px);
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: #dfe9ff;
+      text-decoration: none;
+      gap: 2px;
+      min-width: 50px;
+    }
+
+    .nav-item img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item span {
+      opacity: 0.85;
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .nav-item.active img {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- SPLASH -->
+  <div class="splash" id="splash">
+    <img src="assets/logo.png" alt="INFINITY Empire">
+  </div>
+
+  <!-- ВЕРХНИЕ КАРТОЧКИ -->
+  <div class="top-info">
+    <div class="info-box" id="balanceBox">Баланс: 0.00 ₽</div>
+    <div class="info-box" id="incomeBox">Доход за клик: 5.00 ₽</div>
+  </div>
+
+  <!-- ПАНЕЛЬ ПРОКАЧКИ -->
+  <div class="upgrade-panel" id="upgradePanel">
+    <div class="upgrade-top">
+      <span id="upgradeLevelText">Ур. 1</span>
+      <span id="upgradeIncomeText">
+        <span class="upgrade-value-old" id="oldIncome">5</span>
+        →
+        <span class="upgrade-value-new" id="newIncome">10</span>
+      </span>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="upgrade-cost" id="upgradeCost">9 000 ₽</div>
+
+    <button class="upgrade-btn" id="upgradeButton">Улучшить</button>
+  </div>
+
+  <!-- ЗОНА КЛИКА -->
+  <div class="click-area" id="clickArea">
+    <img src="assets/hand.svg" id="handIcon" alt="">
+    <div class="click-text">Кликайте в этой области, чтобы заработать</div>
+  </div>
+
+  <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+  <div class="bottom-nav">
+    <a href="fun.html" class="nav-item">
+      <img src="assets/fun.png" alt="">
+      <span>Развлечения</span>
+    </a>
+    <a href="business.html" class="nav-item">
+      <img src="assets/business.png" alt="">
+      <span>Бизнесы</span>
+    </a>
+    <a href="index.html" class="nav-item active">
+      <img src="assets/earn.png" alt="">
+      <span>Заработок</span>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <img src="assets/profile.png" alt="">
+      <span>Профиль</span>
+    </a>
+    <a href="settings.html" class="nav-item">
+      <img src="assets/settings.png" alt="">
+      <span>Настройки</span>
+    </a>
+  </div>
+
+</div>
+
+<script>
+/* КУРСЫ ВАЛЮТ */
+const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+
+/* Таблица уровней */
+const clickIncomeLevels = [
+  5, 10, 18, 28, 4000, 55, 72, 90, 110, 135, 160, 185, 215, 250, 300
+];
+
+const upgradeCosts = [
+  0, 9000, 16000, 25000, 37000, 52000, 68000, 90000, 115000, 150000,
+  200000, 260000, 330000, 420000, Infinity
+];
+
+/* Хранилка в рублях */
+function readRub(k){ return parseFloat(localStorage.getItem(k+'_rub')) || 0; }
+function writeRub(k,v){ localStorage.setItem(k+'_rub',v); }
+function fmt(n){ return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+let currency = localStorage.getItem('currency') || '₽';
+
+/* Уровень прокачки */
+let clickLevel = parseInt(localStorage.getItem('clickLevel') || 1);
+
+/* Элементы */
+const balanceBox = document.getElementById('balanceBox');
+const incomeBox = document.getElementById('incomeBox');
+const upgradePanel = document.getElementById('upgradePanel');
+const progressBar = document.getElementById('progressBar');
+const upgradeButton = document.getElementById('upgradeButton');
+const upgradeLevelText = document.getElementById('upgradeLevelText');
+const oldIncomeText = document.getElementById('oldIncome');
+const newIncomeText = document.getElementById('newIncome');
+const upgradeCostText = document.getElementById('upgradeCost');
+const clickArea = document.getElementById('clickArea');
+const handIcon = document.getElementById('handIcon');
+
+/* Обновление UI */
+function updateDisplay(){
+  let balRub = readRub('balance');
+  balanceBox.textContent = `Баланс: ${fmt(balRub * rates[currency])} ${currency}`;
+  incomeBox.textContent = `Доход за клик: ${fmt(clickIncomeLevels[clickLevel-1] * rates[currency])} ${currency}`;
+}
+
+/* Обновление панели прокачки */
+function updateUpgradePanel(){
+  let bal = readRub('balance');
+  let level = clickLevel;
+  let cost = upgradeCosts[level];
+
+  upgradeLevelText.textContent = `Ур. ${level}`;
+  oldIncomeText.textContent = clickIncomeLevels[level-1];
+  newIncomeText.textContent = clickIncomeLevels[Math.min(level, clickIncomeLevels.length-1)];
+
+  if(cost === Infinity){
+    upgradeCostText.textContent = "Максимум";
+    upgradeButton.style.display = "none";
+    progressBar.style.width = "100%";
+    return;
+  } else {
+    upgradeButton.style.display = "block";
+  }
+
+  upgradeCostText.textContent = fmt(cost) + " ₽";
+
+  let percent = Math.min((bal / cost) * 100, 100);
+  progressBar.style.width = percent + "%";
+
+  if(bal < cost){
+    upgradeButton.classList.add("disabled");
+    upgradeButton.disabled = true;
+  } else {
+    upgradeButton.classList.remove("disabled");
+    upgradeButton.disabled = false;
+  }
+}
+
+updateDisplay();
+updateUpgradePanel();
+
+/* КЛИК ПО ЭКРАНУ */
+clickArea.addEventListener('click', (e)=>{
+  let level = clickLevel;
+  let bal = readRub('balance');
+
+  /* Блокировка до 10 000 ₽ */
+  if(level === 1 && bal < 10000){
+    return; /* клики не дают деньги */
+  }
+
+  let gainRub = clickIncomeLevels[level-1];
+  writeRub('balance', bal + gainRub);
+
+  const x=e.clientX, y=e.clientY;
+  const float=document.createElement('div');
+  float.className='floating-text';
+  float.style.left=x+'px';
+  float.style.top=y+'px';
+  float.textContent=`+${fmt(gainRub * rates[currency])} ${currency}`;
+  document.body.appendChild(float);
+  setTimeout(()=>float.remove(),1000);
+
+  handIcon.classList.add("hand-bounce");
+  setTimeout(()=> handIcon.classList.remove("hand-bounce"),120);
+
+  const flash = document.createElement("div");
+  flash.className = "click-flash";
+  const rect = handIcon.getBoundingClientRect();
+  flash.style.left = (rect.left - 20) + "px";
+  flash.style.top = (rect.top - 20) + "px";
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),400);
+
+  updateDisplay();
+  updateUpgradePanel();
+});
+
+/* КНОПКА УЛУЧШЕНИЯ */
+upgradeButton.addEventListener('click', ()=>{
+  let level = clickLevel;
+  let cost = upgradeCosts[level];
+  let bal = readRub('balance');
+
+  if(cost === Infinity) return;
+  if(bal < cost) return;
+
+  writeRub('balance', bal - cost);
+  clickLevel++;
+  localStorage.setItem('clickLevel', clickLevel);
+
+  updateDisplay();
+  updateUpgradePanel();
+});
+
+/* Splash */
+const splash=document.getElementById('splash');
+if(localStorage.getItem('hasLaunched')) splash.style.display='none';
+else localStorage.setItem('hasLaunched','1');
+</script>
+
+</body>
+</html>

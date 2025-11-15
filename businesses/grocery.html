@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Продуктовый магазин — INFINITY Empire</title>
+  <style>
+    :root { --accent:#00e0c6; --glass: rgba(255,255,255,0.15); }
+    html,body { margin:0; height:100%; font-family: 'Inter', system-ui, Arial, sans-serif;
+      background: linear-gradient(180deg,#20C6B8 0%,#1A2C5B 100%); color:#fff; }
+
+    /* верхние плашки */
+    .top-info{ position:fixed; top:16px; left:50%; transform:translateX(-50%);
+      display:flex; align-items:center; gap:8px; z-index:1000; flex-wrap:wrap; }
+    .info-box{ background:var(--glass); backdrop-filter: blur(10px);
+      border-radius:20px; padding:12px 18px; font-size:16px; font-weight:700;
+      border:1px solid rgba(255,255,255,0.25); white-space:nowrap; }
+
+    /* заголовок и шестерёнка */
+    .wrap{ margin-top:120px; padding:0 12px 110px; }
+    .title-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; }
+    .title{ font-size:22px; font-weight:900; }
+    .gear{ width:26px; height:26px; cursor:pointer; filter: drop-shadow(0 0 4px rgba(0,0,0,.35)); }
+
+    /* карточки ступеней */
+    .grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+      gap:14px; max-width:980px; margin:0 auto; }
+    .card{ background:#fff; color:#111; border-radius:18px; padding:14px 14px 16px;
+      box-shadow:0 10px 28px rgba(0,0,0,.22); }
+    .card h3{ margin:0 0 8px; font-size:18px; display:flex; align-items:center; gap:8px; }
+    .row{ display:flex; align-items:center; justify-content:space-between; margin:6px 0; }
+    .muted{ color:#555; font-weight:600; }
+    .strong{ font-weight:800; }
+    .btn{ width:100%; margin-top:10px; background:var(--accent); color:#03201b; border:none;
+      border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .hint{ font-size:12px; color:#666; margin-top:6px; }
+
+    /* модалка аналитики */
+    .modal-back{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:2000; }
+    .modal{ width:min(92vw,560px); background:#0b182f; color:#e9f7f5; border-radius:16px; padding:16px;
+      border:1px solid rgba(255,255,255,.18); box-shadow:0 18px 48px rgba(0,0,0,.55); }
+    .modal h3{ margin:0 0 10px; font-size:18px; }
+    .kvs{ display:grid; grid-template-columns: 1fr auto; row-gap:8px; column-gap:10px; }
+    .kbd{ font-weight:700; opacity:.9; }
+    .val{ font-weight:900; }
+    .modal-actions{ display:flex; gap:10px; margin-top:14px; }
+    .btn-ghost{ flex:1; background:transparent; border:1px solid rgba(255,255,255,.25);
+      color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; }
+    .btn-danger{ flex:1; background:#ff3b30; color:#fff; font-weight:900; border:none;
+      border-radius:10px; padding:10px 12px; cursor:pointer; }
+    .danger-note{ font-size:12px; color:#ffb4af; margin-top:6px; }
+
+    /* нижняя панель — НЕ ТРОГАЕМ, просто стили под существующую разметку */
+    .bottom-nav{ position:fixed; bottom:0; left:0; right:0; height:70px; background:var(--glass);
+      backdrop-filter: blur(10px); display:flex; justify-content:space-around; align-items:center; z-index:1000; }
+    .nav-item{ display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#fff; font-size:12px; }
+    .nav-item img{ width:28px; height:28px; margin-bottom:4px; }
+    .nav-item.active span{ color:var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- верх: баланс и суммарный доход в час -->
+  <div class="top-info">
+    <div class="info-box" id="balanceBox">Баланс: 0 ₽</div>
+    <div class="info-box" id="incomeBox">💰 Доход в час: 0 ₽</div>
+  </div>
+
+  <div class="wrap">
+    <div class="title-row">
+      <div class="title">Продуктовый магазин</div>
+      <!-- иконку шестерёнки можешь заменить на свой svg/png -->
+      <img class="gear" id="gearBtn" src="../assets/icons/gear.svg" alt="Настройки" title="Настройки" />
+    </div>
+
+    <div class="grid" id="stages">
+
+      <!-- Местный магазин -->
+      <div class="card" data-stage="local">
+        <h3>🏪 Местный магазин</h3>
+        <div class="row"><div class="muted">Уровень</div><div class="strong" id="local_lvl">0</div></div>
+        <div class="row"><div class="muted">Доход/час</div><div class="strong" id="local_iph">0 ₽/ч</div></div>
+        <div class="row"><div class="muted">Цена следующего уровня</div><div class="strong" id="local_cost">150 000 ₽</div></div>
+        <button class="btn" id="local_btn">Купить/Улучшить</button>
+        <div class="hint">L1: 150 000 ₽; L2: 45 000 ₽; далее цена ×1.30 (кратно 1000), доход ×1.20/ур.</div>
+      </div>
+
+      <!-- Небольшая сеть -->
+      <div class="card" data-stage="chain">
+        <h3>🛒 Небольшая сеть</h3>
+        <div class="row"><div class="muted">Уровень</div><div class="strong" id="chain_lvl">0</div></div>
+        <div class="row"><div class="muted">Доход/час</div><div class="strong" id="chain_iph">0 ₽/ч</div></div>
+        <div class="row"><div class="muted">Цена следующего уровня</div><div class="strong" id="chain_cost">1 200 000 ₽</div></div>
+        <button class="btn" id="chain_btn">Купить/Улучшить</button>
+        <div class="hint">L1: 1 200 000 ₽; L2: 360 000 ₽; далее цена ×1.30 (кратно 1000), доход ×1.20/ур.</div>
+      </div>
+
+      <!-- Крупная сеть -->
+      <div class="card" data-stage="corp">
+        <h3>🏬 Крупная сеть</h3>
+        <div class="row"><div class="muted">Уровень</div><div class="strong" id="corp_lvl">0</div></div>
+        <div class="row"><div class="muted">Доход/час</div><div class="strong" id="corp_iph">0 ₽/ч</div></div>
+        <div class="row"><div class="muted">Цена следующего уровня</div><div class="strong" id="corp_cost">9 600 000 ₽</div></div>
+        <button class="btn" id="corp_btn">Купить/Улучшить</button>
+        <div class="hint">L1: 9 600 000 ₽; L2: 2 880 000 ₽; далее цена ×1.30 (кратно 1000), доход ×1.20/ур.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- нижняя навигация (не трогаю содержание, показываю пример совместимых стилей) -->
+  <div class="bottom-nav">
+    <a href="../fun.html" class="nav-item"><img src="../assets/fun.png"><span>Развлечения</span></a>
+    <a href="../business.html" class="nav-item active"><img src="../assets/business.png"><span>Бизнесы</span></a>
+    <a href="../index.html" class="nav-item"><img src="../assets/earn.png"><span>Заработок</span></a>
+    <a href="../profile.html" class="nav-item"><img src="../assets/profile.png"><span>Профиль</span></a>
+    <a href="../settings.html" class="nav-item"><img src="../assets/settings.png"><span>Настройки</span></a>
+  </div>
+
+  <!-- МОДАЛКА НАСТРОЕК -->
+  <div class="modal-back" id="modalBack">
+    <div class="modal">
+      <h3>Продуктовый магазин — аналитика</h3>
+      <div class="kvs">
+        <div class="kbd">Заработано за всё время</div><div class="val" id="m_earned">0 ₽</div>
+        <div class="kbd">Капитализация (вложено)</div><div class="val" id="m_invested">0 ₽</div>
+        <div class="kbd">Текущий доход в час</div><div class="val" id="m_iph">0 ₽/ч</div>
+        <div class="kbd">Прогноз за 1 ч</div><div class="val" id="m_fore1">0 ₽</div>
+        <div class="kbd">Прогноз за 24 ч</div><div class="val" id="m_fore24">0 ₽</div>
+        <div class="kbd">Средний ROI</div><div class="val" id="m_roi">—</div>
+      </div>
+
+      <div class="danger-note">Закрытие бизнеса вернёт <b>30%</b> от капитализации в баланс и <u>сбросит все уровни и доход</u> этого бизнеса.</div>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="closeModalBtn">Закрыть</button>
+        <button class="btn-danger" id="closeBizBtn">Закрыть бизнес (30%)</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== базовые утилиты валюты и форматирования
+  const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+  const getCur = () => localStorage.getItem('currency') || '₽';
+  const fmt = (n) => Number(n).toLocaleString('ru-RU',{minimumFractionDigits:0, maximumFractionDigits:0});
+  const fmt2 = (n) => Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2, maximumFractionDigits:2});
+
+  // ====== ключи для "Продуктового магазина"
+  const K = {
+    // по ступеням
+    local_lvl: 'biz_grocery_local_lvl',
+    local_iph: 'biz_grocery_local_iph',
+    chain_lvl: 'biz_grocery_chain_lvl',
+    chain_iph: 'biz_grocery_chain_iph',
+    corp_lvl:  'biz_grocery_corporate_lvl',
+    corp_iph:  'biz_grocery_corporate_iph',
+    // агрегаты по бизнесу
+    invested:  'biz_grocery_total_invested_rub',
+    earned:    'biz_grocery_total_earned_rub',
+    iph_sum:   'biz_grocery_iph',
+    updated:   'biz_grocery_updated_at',
+  };
+  const K_NAME = 'biz_grocery_name';
+
+  // ====== параметры ступеней
+  const P = {
+    local: { baseCost:150000, l2:45000, costK:1.30, baseIPH:3600, incomeK:1.20, maxL:10 },
+    chain: { baseCost:1200000, l2:360000, costK:1.30, baseIPH:30000, incomeK:1.20, maxL:10 },
+    corp:  { baseCost:9600000, l2:2880000, costK:1.30, baseIPH:240000, incomeK:1.20, maxL:10 },
+  };
+
+  // округление до 1000
+  const round1000 = (x)=> Math.round(x/1000)*1000;
+
+  // цена уровня L (L>=1)
+  function priceOf(stage, L){
+    const cfg = P[stage];
+    if(L===1) return cfg.baseCost;
+    if(L===2) return cfg.l2;
+    // от предыдущей цены
+    let prev = priceOf(stage, L-1);
+    return round1000(prev * cfg.costK);
+  }
+
+  // текущая цена для следующего уровня = priceOf(L+1)
+  function nextPrice(stage, lvl){
+    const nextL = Math.min(lvl+1, P[stage].maxL);
+    return priceOf(stage, nextL);
+  }
+
+  // доход на уровне L
+  function iphOf(stage, L){
+    if (L<=0) return 0;
+    const cfg = P[stage];
+    return Math.round(cfg.baseIPH * Math.pow(cfg.incomeK, L-1));
+  }
+
+  // ====== чтение/запись RUB
+  const getRub = (k)=> parseFloat(localStorage.getItem(k)||'0') || 0;
+  const setRub = (k,v)=> localStorage.setItem(k, String(v));
+  const getInt = (k)=> parseInt(localStorage.getItem(k)||'0') || 0;
+  const setInt = (k,v)=> localStorage.setItem(k, String(v));
+
+  // ====== локальные состояния ступеней
+  function getLvl(stage){
+    if(stage==='local') return getInt(K.local_lvl);
+    if(stage==='chain') return getInt(K.chain_lvl);
+    if(stage==='corp')  return getInt(K.corp_lvl);
+  }
+  function setLvl(stage, v){
+    if(stage==='local') return setInt(K.local_lvl, v);
+    if(stage==='chain') return setInt(K.chain_lvl, v);
+    if(stage==='corp')  return setInt(K.corp_lvl, v);
+  }
+  function setStageIPH(stage, iph){
+    if(stage==='local') return setRub(K.local_iph, iph);
+    if(stage==='chain') return setRub(K.chain_iph, iph);
+    if(stage==='corp')  return setRub(K.corp_iph, iph);
+  }
+  function getStageIPH(stage){
+    if(stage==='local') return getRub(K.local_iph);
+    if(stage==='chain') return getRub(K.chain_iph);
+    if(stage==='corp')  return getRub(K.corp_iph);
+  }
+
+  // ====== агрегаты бизнеса
+  function recalcGroceryIPH(){
+    const sum = getRub(K.local_iph) + getRub(K.chain_iph) + getRub(K.corp_iph);
+    setRub(K.iph_sum, sum);
+    return sum;
+  }
+
+  function addInvested(v){ setRub(K.invested, getRub(K.invested) + v); }
+  function addEarned(v){ setRub(K.earned, getRub(K.earned) + v); }
+
+  // ====== глобальные ключи
+  const BAL_K = 'balance_rub';
+  const IPH_GLOBAL_K = 'income_per_hour';
+
+  function getBalance(){ return getRub(BAL_K); }
+  function setBalance(v){ setRub(BAL_K, v); }
+
+  function recalcIncomePerHourGlobal(){
+    // аккуратно обновим глобальный доход: вычесть старый вклад grocery и прибавить новый
+    const prevG = getRub(K.iph_sum);
+    const newG = recalcGroceryIPH();
+    const total = (parseFloat(localStorage.getItem(IPH_GLOBAL_K))||0) - prevG + newG;
+    localStorage.setItem(IPH_GLOBAL_K, String(Math.max(0,total)));
+    return Math.max(0,total);
+  }
+
+  // ====== UI обновление шапки
+  function refreshTopBars(){
+    const cur = getCur();
+    const bal = getBalance()*rates[cur];
+    const iphTot = (parseFloat(localStorage.getItem(IPH_GLOBAL_K))||0)*rates[cur];
+    document.getElementById('balanceBox').textContent = `Баланс: ${fmt2(bal)} ${cur}`;
+    document.getElementById('incomeBox').textContent  = `💰 Доход в час: ${fmt2(iphTot)} ${cur}`;
+  }
+
+  // ====== UI обновление карточек
+  function refreshStage(stage){
+    const lvl = getLvl(stage);
+    const iph = iphOf(stage, lvl);
+    setStageIPH(stage, iph);
+
+    const cur = getCur();
+    document.getElementById(`${stage}_lvl`).textContent = lvl;
+    document.getElementById(`${stage}_iph`).textContent = `${fmt(iph*rates[cur])} ${cur}/ч`;
+    document.getElementById(`${stage}_cost`).textContent = `${fmt(nextPrice(stage, lvl)*rates[cur])} ${cur}`;
+  }
+
+  function refreshAll(){
+    ['local','chain','corp'].forEach(refreshStage);
+    recalcIncomePerHourGlobal();
+    refreshTopBars();
+  }
+
+  // ====== покупка/апгрейд
+  function upgrade(stage){
+    const lvl = getLvl(stage);
+    if(lvl >= P[stage].maxL) return;
+
+    const price = nextPrice(stage, lvl); // в рублях
+    let bal = getBalance();
+    if(bal < price){ alert('Недостаточно средств'); return; }
+
+    // оплата
+    setBalance(bal - price);
+    addInvested(price);
+
+    // апгрейд уровня
+    const newLvl = Math.min(lvl+1, P[stage].maxL);
+    setLvl(stage, newLvl);
+    setStageIPH(stage, iphOf(stage, newLvl));
+
+    // пересчёт доходов
+    recalcIncomePerHourGlobal();
+    refreshAll();
+  }
+
+  // ====== модалка
+  const modalBack = document.getElementById('modalBack');
+  document.getElementById('gearBtn').onclick = openModal;
+  document.getElementById('closeModalBtn').onclick = closeModal;
+  document.getElementById('closeBizBtn').onclick = onCloseBusiness;
+
+  function openModal(){
+    // подсчёт метрик
+    const invested = getRub(K.invested);
+    const iph = recalcGroceryIPH();
+    const earned = getRub(K.earned);
+    const cur = getCur();
+
+    document.getElementById('m_earned').textContent = `${fmt2(earned*rates[cur])} ${cur}`;
+    document.getElementById('m_invested').textContent = `${fmt2(invested*rates[cur])} ${cur}`;
+    document.getElementById('m_iph').textContent = `${fmt2(iph*rates[cur])} ${cur}/ч`;
+    document.getElementById('m_fore1').textContent = `${fmt2(iph*rates[cur])} ${cur}`;
+    document.getElementById('m_fore24').textContent = `${fmt2(iph*24*rates[cur])} ${cur}`;
+    document.getElementById('m_roi').textContent = iph>0 ? `${fmt2(invested/iph)} ч` : '—';
+
+    modalBack.style.display = 'flex';
+  }
+  function closeModal(){ modalBack.style.display = 'none'; }
+
+  // ====== закрытие бизнеса (30% капитализации)
+  function onCloseBusiness(){
+    const invested = getRub(K.invested);
+    const payout = Math.floor(invested * 0.30); // ₽
+
+    const cur = getCur();
+    const pretty = `${fmt2(payout*rates[cur])} ${cur}`;
+
+    if(!confirm(`Вы получите 30% от капитализации: ${pretty}. Все уровни и доход этого бизнеса будут сброшены. Продолжить?`)){
+      return;
+    }
+
+    // 1) выплата
+    setBalance(getBalance() + payout);
+
+    // 2) сброс уровней и доходов ступеней
+    setLvl('local', 0); setStageIPH('local', 0);
+    setLvl('chain', 0); setStageIPH('chain', 0);
+    setLvl('corp',  0); setStageIPH('corp',  0);
+
+    // 3) сброс капитализации; доход бизнеса в 0
+    setRub(K.invested, 0);
+    setRub(K.iph_sum, 0);
+
+    // 4) пересчёт глобального дохода и UI
+    recalcIncomePerHourGlobal();
+    refreshAll();
+    closeModal();
+    alert(`Бизнес закрыт. Выплата: ${pretty}`);
+  }
+  // если у всех ступеней уровень 0 — отправим на мастер покупки
+  if (
+    (parseInt(localStorage.getItem(K.local_lvl)||'0')||0)===0 &&
+    (parseInt(localStorage.getItem(K.chain_lvl)||'0')||0)===0 &&
+    (parseInt(localStorage.getItem(K.corp_lvl)||'0')||0)===0
+  ){
+    location.replace('grocery-start.html');
+  }
+
+// заголовок с именем
+const nm = localStorage.getItem(K_NAME) || 'Продуктовый магазин';
+document.querySelector('.title').textContent = nm;
+
+  // ====== инициализация
+  ['local','chain','corp'].forEach(s=>{
+    if(getLvl(s) < 0 || isNaN(getLvl(s))) setLvl(s,0);
+    setStageIPH(s, iphOf(s, getLvl(s)));
+    document.getElementById(`${s}_btn`).onclick = ()=> upgrade(s);
+  });
+
+  // подсказка: тут мы НЕ добавляем пассив в баланс (чтобы не дублировать глобальный тик),
+  // только обновляем UI. Глобальное начисление у тебя уже работает на страницах.
+  refreshAll();
+
+  // обновление верхних плашек раз в 2 сек (визуальный апдейт)
+  setInterval(refreshTopBars, 2000);
+
+</script>
+</body>
+</html>

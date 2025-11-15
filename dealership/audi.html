@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Audi — INFINITY Auto</title>
+    <style>
+        body { margin: 0; font-family: Inter, sans-serif; background: #ffffff; }
+        .top-info { position: fixed; top: 16px; left: 16px; display: flex; align-items: center; gap: 14px; z-index: 1000; }
+        .info-box {
+            background: rgba(255,255,255,0.35); backdrop-filter: blur(12px);
+            border-radius: 18px; padding: 8px 16px; font-size: 18px; font-weight: 600;
+            border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+        }
+        .back-arrow { width: 30px; height: 30px; cursor: pointer; transition:.25s; opacity:.9; }
+        .back-arrow:hover { transform: translateX(-4px); opacity:1; }
+
+        .page-title { text-align:center; font-size:27px; font-weight:700; margin-top:90px; }
+
+        .switcher { text-align:center; margin-top: 14px; }
+        .switch-btn {
+            display:inline-block; margin: 0 10px; padding: 6px 14px;
+            font-size:18px; font-weight:600; cursor:pointer;
+            border-bottom:3px solid transparent; transition:.25s;
+        }
+        .switch-btn.active { border-bottom:3px solid #000; }
+
+        .cars {
+            margin-top: 30px; display: grid; grid-template-columns: repeat(3, 300px);
+            justify-content: center; gap: 32px; padding-bottom: 60px;
+        }
+        .car-card { width: 300px; background: #fff; border-radius: 26px; padding: 18px;
+            cursor: pointer; transition: .28s;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.28), 0 0 18px rgba(0,0,0,0.22);
+        }
+        .car-card:hover { transform: scale(1.05);
+            box-shadow: 0 26px 70px rgba(0,0,0,0.36), 0 0 22px rgba(0,0,0,0.25);
+        }
+        .car-card img { width:100%; border-radius:18px; }
+        .car-name { font-size:17px; font-weight:600; margin-top:6px; }
+        .car-price { font-size:15px; color:#444; }
+
+        .modal-bg { position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(7px);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal {
+            background: #fff; border-radius: 26px; padding: 22px;
+            width: 90%; max-width: 720px; display: flex; gap: 22px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+            position: relative;
+        }
+        #carImg { width: 50%; border-radius: 18px; object-fit: cover; }
+        .modal-info { width: 50%; text-align: left; }
+        .close-x { position: absolute; top: 18px; right: 24px; font-size: 28px; cursor: pointer; opacity:.7; transition:.2s; }
+        .close-x:hover { opacity:1; }
+
+        .variant-btn { display:inline-block; padding:8px 14px; margin:4px;
+            border-radius:10px; background:#eee; cursor:pointer; font-weight:600; transition:.2s;
+        }
+        .variant-btn.active { background:#111; color:#fff; }
+
+        .buy-btn { margin-top:18px; width:100%; padding:12px; border-radius:12px;
+            font-size:18px; font-weight:600; background:#111; color:#fff; cursor:pointer; transition:.25s;
+        }
+        .buy-btn:hover { opacity:.85; }
+    </style>
+</head>
+
+<body>
+
+<div class="top-info">
+    <svg class="back-arrow" onclick="location.href='dealership.html'" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    <div class="info-box" id="balanceBox">Баланс: ...</div>
+</div>
+
+<div class="page-title">Audi</div>
+
+<div class="switcher">
+    <span class="switch-btn active" id="tabAudi" onclick="showAudi()">Audi</span>
+    <span class="switch-btn" id="tabSLine" onclick="showSLine()">S Line</span>
+</div>
+
+<div class="cars" id="cars"></div>
+
+<div class="modal-bg" id="modalBg">
+    <div class="modal">
+        <div class="close-x" onclick="closeModal()">×</div>
+        <img id="carImg">
+        <div class="modal-info">
+            <h2 id="carTitle"></h2>
+            <div id="variants"></div>
+            <p id="specs" style="margin-top:8px;color:#555;"></p>
+            <h3 id="price"></h3>
+            <button class="buy-btn" onclick="buyCar()">Купить</button>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/bankNotify.js"></script>
+
+<script>
+function readRub(k){return parseFloat(localStorage.getItem(k+'_rub'))||0;}
+function fmt(n){return Number(n).toLocaleString('ru-RU');}
+function cur(){return localStorage.getItem("currency")||"₽";}
+const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+function updateBalance(){const b=readRub("balance"),c=cur();document.getElementById("balanceBox").textContent="Баланс: "+fmt(b*rates[c])+" "+c;}
+updateBalance();
+
+/* Audi */
+const cars = [
+ {name:"A3 (8Y)",img:"assets/car/audi/a3.png",variants:[
+   {name:"A3 1.5 TFSI",power:150,drive:"FWD",zero:8.4,price:2500000},
+   {name:"A3 2.0 TFSI",power:190,drive:"AWD",zero:6.9,price:3000000}]},
+
+ {name:"A4 (B9)",img:"assets/car/audi/a4.png",variants:[
+   {name:"A4 2.0 TDI",power:150,drive:"FWD",zero:8.1,price:3300000},
+   {name:"A4 2.0 TFSI",power:190,drive:"AWD",zero:7.3,price:3800000}]},
+
+ {name:"Q5 (FY)",img:"assets/car/audi/q5.png",variants:[
+   {name:"Q5 2.0 TFSI",power:250,drive:"AWD",zero:6.5,price:4800000},
+   {name:"Q5 2.0 TDI",power:190,drive:"AWD",zero:7.8,price:4200000}]},
+
+ {name:"Q7 (4M)",img:"assets/car/audi/q7.png",variants:[
+   {name:"Q7 3.0 TDI",power:272,drive:"AWD",zero:7.4,price:7200000},
+   {name:"Q7 3.0 TFSI",power:333,drive:"AWD",zero:6.3,price:8300000}]},
+
+ {name:"Q8 (4M)",img:"assets/car/audi/q8.png",variants:[
+   {name:"Q8 3.0 TFSI",power:340,drive:"AWD",zero:5.6,price:10500000}]}
+];
+
+/* S Line */
+const carsSLine = [
+ {name:"S3 (8Y)",img:"assets/car/audi/s3.png",variants:[
+   {name:"S3 2.0 TFSI",power:310,drive:"AWD",zero:4.8,price:4500000}]},
+
+ {name:"S4 (B9)",img:"assets/car/audi/s4.png",variants:[
+   {name:"S4 3.0 TFSI",power:354,drive:"AWD",zero:4.7,price:6000000}]},
+
+ {name:"SQ5 (FY)",img:"assets/car/audi/sq5.png",variants:[
+   {name:"SQ5 3.0 TFSI",power:354,drive:"AWD",zero:5.1,price:7500000}]},
+
+ {name:"SQ7 (4M)",img:"assets/car/audi/sq7.png",variants:[
+   {name:"SQ7 4.0 TDI",power:435,drive:"AWD",zero:5.2,price:11000000}]}
+];
+
+/* ✅ Правильный каталог для авторынка */
+localStorage.setItem("catalog_audi", JSON.stringify(
+  [...cars, ...carsSLine].flatMap(m => m.variants.map(v => ({
+    brand:"Audi",
+    model:m.name,
+    variant:v.name,
+    price:v.price,
+    img:m.img,
+    power: v.power,
+    zero: v.zero,
+    drive: v.drive,
+    body:(m.name.match(/\((.*?)\)/)?.[1] || ""),
+    yearStart: 2021
+  })))
+));
+
+let currentCars=cars;
+
+const wrap=document.getElementById("cars");
+function render(){
+ wrap.innerHTML="";
+ currentCars.forEach((c,i)=>wrap.innerHTML+=`
+  <div class="car-card" onclick="openCar(${i})">
+    <img src="../${c.img}">
+    <div class="car-name">${c.name}</div>
+    <div class="car-price">от ${fmt(c.variants[0].price)} ₽</div>
+  </div>`);
+}
+render();
+
+function showAudi(){currentCars=cars;tabAudi.classList.add("active");tabSLine.classList.remove("active");render();}
+function showSLine(){currentCars=carsSLine;tabSLine.classList.add("active");tabAudi.classList.remove("active");render();}
+
+let selectedModel, selectedVariant=0;
+function openCar(i){selectedModel=currentCars[i];selectedVariant=0;showModal();}
+function closeModal(){modalBg.style.display="none";}
+function showModal(){
+ const m=selectedModel,v=m.variants[selectedVariant],c=cur();
+ modalBg.style.display="flex";
+ carImg.src="../"+m.img;
+ carTitle.textContent=m.name+" — "+v.name+" (2025)";
+ variants.innerHTML=m.variants.map((x,i)=>`<span class="variant-btn ${i==selectedVariant?'active':''}" onclick="setVariant(${i})">${x.name}</span>`).join("");
+ specs.textContent=`${v.power} л.с. | ${v.drive} | 0-100: ${v.zero} сек`;
+ price.textContent="Цена: "+fmt(v.price*rates[c])+" "+c;
+}
+function setVariant(i){selectedVariant=i;showModal();}
+function buyCar(){
+ const v=selectedModel.variants[selectedVariant];
+ let bal=readRub("balance");
+ if(bal < v.price) return showBankNotification(0,"Недостаточно средств ❌");
+ bal-=v.price; localStorage.setItem("balance_rub",bal); updateBalance();
+ let garage=JSON.parse(localStorage.getItem("garage")||"[]");
+ garage.push({brand:"Audi",model:selectedModel.name,variant:v.name,year:2025,power:v.power,drive:v.drive,zero:v.zero,priceRub:v.price,image:selectedModel.img});
+ localStorage.setItem("garage",JSON.stringify(garage));
+ closeModal();
+ showBankNotification(-v.price,"Успешная покупка ✔");
+}
+</script>
+
+</body>
+</html>

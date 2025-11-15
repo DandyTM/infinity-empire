@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Подработки — INFINITY Empire</title>
+
+  <!-- ШРИФТ SF PRO DISPLAY -->
+  <style>
+  @font-face {
+    font-family: 'SF Pro Display';
+    src: url('assets/fonts/SFProDisplay-Medium.woff2') format('woff2');
+    font-weight: 500;
+  }
+  @font-face {
+    font-family: 'SF Pro Display';
+    src: url('assets/fonts/SFProDisplay-Semibold.woff2') format('woff2');
+    font-weight: 600;
+  }
+  </style>
+
+  <style>
+    :root { --accent: #00e0c6; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: 'SF Pro Display', sans-serif;
+      background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+      color: #fff;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .top-info {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      z-index: 1000;
+    }
+
+    .info-box {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 14px 28px;
+      font-size: 21px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.28);
+      box-shadow: 0 0 10px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      margin-top: 110px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      opacity: 0.95;
+    }
+
+    .cards-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: center;
+      padding: 20px 0 120px;
+    }
+
+    .card {
+      width: 180px;
+      height: 200px;
+      border-radius: 28px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.28);
+      box-shadow:
+        0 8px 22px rgba(0,0,0,0.25),
+        inset 0 0 12px rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      transition: 0.25s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.06);
+      box-shadow:
+        0 14px 38px rgba(0,0,0,0.35),
+        inset 0 0 14px rgba(255,255,255,0.25);
+    }
+
+    .card img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 14px;
+      filter: none !important;
+      opacity: 1 !important;
+      pointer-events: none;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-item img { width: 28px; height: 28px; margin-bottom: 4px; }
+    .nav-item.active span { color: var(--accent); }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-info">
+    <div class="info-box" id="balanceBox">Баланс: 0 ₽</div>
+  </div>
+
+  <h1>Подработки</h1>
+
+  <div class="cards-grid">
+
+    <div class="card" onclick="location.href='games/job-courier.html'">
+      <img src="icons/ideliv.svg" alt="">
+      <div class="card-title">Курьер</div>
+    </div>
+
+    <div class="card" onclick="location.href='games/job-taxi.html'">
+      <img src="icons/i_go.png" alt="">
+      <div class="card-title">Такси</div>
+    </div>
+    
+    <div class="card" onclick="location.href='games/job-cleaner.html'">
+      <img src="icons/trash.png" alt="">
+      <div class="card-title">Уборщик</div>
+    </div>
+
+
+
+  <div class="bottom-nav">
+    <a href="fun.html" class="nav-item"><img src="assets/fun.png"><span>Развлечения</span></a>
+    <a href="business.html" class="nav-item active"><img src="assets/business.png"><span>Бизнесы</span></a>
+    <a href="index.html" class="nav-item"><img src="assets/earn.png"><span>Заработок</span></a>
+    <a href="profile.html" class="nav-item"><img src="assets/profile.png"><span>Профиль</span></a>
+    <a href="settings.html" class="nav-item"><img src="assets/settings.png"><span>Настройки</span></a>
+  </div>
+
+<script>
+  const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+  function readRub(k){ return parseFloat(localStorage.getItem(k+'_rub')) || 0; }
+  function fmt(n){ return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  const currency = localStorage.getItem('currency') || '₽';
+  const balanceRub = readRub('balance');
+  document.getElementById('balanceBox').textContent = `Баланс: ${fmt(balanceRub * rates[currency])} ${currency}`;
+</script>
+
+</body>
+</html>

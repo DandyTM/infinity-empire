@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>INFINITY Auto</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Inter, sans-serif;
+        background: #ffffff;
+    }
+
+    .top-info {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        z-index: 1000;
+    }
+
+    .info-box {
+        background: rgba(255,255,255,0.35);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        padding: 8px 16px;
+        font-size: 18px;
+        font-weight: 600;
+        border: 1px solid rgba(0,0,0,0.15);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+    }
+
+    .back-arrow {
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        transition: .25s;
+        opacity: .9;
+    }
+    .back-arrow:hover {
+        transform: translateX(-4px);
+        opacity: 1;
+    }
+
+    .dealer-title {
+        text-align: center;
+        font-size: 27px;
+        font-weight: 700;
+        margin-top: 90px;
+    }
+
+    .brands {
+        margin-top: 45px;
+        display: flex;
+        justify-content: center;
+        gap: 42px;
+        flex-wrap: wrap;
+        padding-bottom: 40px;
+    }
+
+    .brand-card {
+        width: 250px;
+        height: 250px;
+        background: #fff;
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+
+        transition: 0.28s ease;
+        box-shadow:
+            0 8px 24px rgba(0,0,0,0.18),
+            0 0 12px rgba(0,0,0,0.12);
+    }
+
+    .brand-card:hover {
+        transform: scale(1.06);
+        box-shadow:
+            0 14px 38px rgba(0,0,0,0.26),
+            0 0 18px rgba(0,0,0,0.18);
+    }
+
+    .brand-card img {
+        width: 140px !important;
+        height: auto !important;
+        pointer-events: none;
+    }
+
+    .brand-name {
+        margin-top: 14px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #111;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="top-info">
+    <svg class="back-arrow" onclick="goBack()" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+    </svg>
+
+    <div class="info-box" id="balanceBox">Баланс: ...</div>
+</div>
+
+<div class="dealer-title">INFINITY Auto</div>
+
+<div class="brands">
+
+    <!-- Existing brand cards (BMW, Mercedes, LADA) -->
+    <div class="brand-card" onclick="location.href='bmw.html'">
+        <img src="../assets/car/logos/bmw.png">
+        <div class="brand-name">BMW</div>
+    </div>
+
+    <div class="brand-card" onclick="location.href='mercedes.html'">
+        <img src="../assets/car/logos/mercedes.png">
+        <div class="brand-name">Mercedes</div>
+    </div>
+
+    <div class="brand-card" onclick="location.href='lada.html'">
+        <img src="../assets/car/logos/lada.png">
+        <div class="brand-name">LADA</div>
+    </div>
+
+    <!-- New brand cards (Audi, Volkswagen, Toyota) -->
+    <div class="brand-card" onclick="location.href='audi.html'">
+        <img src="../assets/car/logos/audi.png">
+        <div class="brand-name">Audi</div>
+    </div>
+
+    <div class="brand-card" onclick="location.href='volkswagen.html'">
+        <img src="../assets/car/logos/volkswagen.png">
+        <div class="brand-name">Volkswagen</div>
+    </div>
+
+    <div class="brand-card" onclick="location.href='toyota.html'">
+        <img src="../assets/car/logos/toyota.png">
+        <div class="brand-name">Toyota</div>
+    </div>
+
+</div>
+
+<script>
+function goBack() {
+    window.location.href = "../fun.html";
+}
+
+function readRub(key) {
+  return parseFloat(localStorage.getItem(key+'_rub')) || 0;
+}
+
+function fmt(num) {
+  return Number(num).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function readSelectedCurrency() {
+  return localStorage.getItem("currency") || "₽";
+}
+
+const rates = {"₽": 1, "₸": 6.5, "$": 0.012, "€": 0.011};
+
+function updateBalanceDisplays() {
+  const balance = readRub("balance");
+  const currency = readSelectedCurrency();
+  const converted = balance * rates[currency];
+  document.getElementById("balanceBox").textContent = "Баланс: " + fmt(converted) + " " + currency;
+}
+
+updateBalanceDisplays();
+</script>
+
+</body>
+</html>

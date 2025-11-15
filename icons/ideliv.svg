@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<rect width="512" height="512" rx="110" fill="#FFD500"></rect>
+
+<!-- Стрелка как была, поднята -->
+<g transform="translate(0, -35)">
+  <path d="M145 350 L345 160" stroke="#111" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M345 160 L260 160" stroke="#111" stroke-width="62" stroke-linecap="round"></path>
+  <path d="M345 160 L345 245" stroke="#111" stroke-width="62" stroke-linecap="round"></path>
+</g>
+
+<!-- Текст в стиле Inter Black -->
+<text x="50%" y="88%" text-anchor="middle" fill="#111" font-family="Inter, sans-serif" font-weight="900" font-size="106" letter-spacing="1">
+I.Deliv
+</text>
+</svg>

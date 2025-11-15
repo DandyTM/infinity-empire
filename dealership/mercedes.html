@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Mercedes-Benz — INFINITY Auto</title>
+
+<style>
+body { margin: 0; font-family: Inter, sans-serif; background: #ffffff; }
+.top-info { position: fixed; top: 16px; left: 16px; display: flex; align-items: center; gap: 14px; z-index: 1000; }
+.info-box {
+    background: rgba(255,255,255,0.35); backdrop-filter: blur(12px);
+    border-radius: 18px; padding: 8px 16px; font-size: 18px; font-weight: 600;
+    border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+}
+.back-arrow { width: 30px; height: 30px; cursor: pointer; transition:.25s; opacity:.9; }
+.back-arrow:hover { transform: translateX(-4px); opacity:1; }
+
+.page-title { text-align:center; font-size:27px; font-weight:700; margin-top:90px; }
+.switcher { text-align:center; margin-top: 14px; }
+.switch-btn {
+    display:inline-block; margin: 0 10px; padding: 6px 14px;
+    font-size:18px; font-weight:600; cursor:pointer;
+    border-bottom:3px solid transparent; transition:.25s;
+}
+.switch-btn.active { border-bottom:3px solid #000; }
+
+.cars {
+    margin-top: 30px; display: grid; grid-template-columns: repeat(3, 300px);
+    justify-content: center; gap: 32px; padding-bottom: 60px;
+}
+.car-card { width: 300px; background: #fff; border-radius: 26px; padding: 18px;
+    cursor: pointer; transition: .28s;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.28), 0 0 18px rgba(0,0,0,0.22);
+}
+.car-card:hover { transform: scale(1.05);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.36), 0 0 22px rgba(0,0,0,0.25);
+}
+.car-card img { width:100%; border-radius:18px; }
+.car-name { font-size:17px; font-weight:600; margin-top:6px; }
+.car-price { font-size:15px; color:#444; }
+
+.modal-bg { position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(7px);
+    display: none; justify-content: center; align-items: center; z-index: 2000;
+}
+.modal {
+    background: #fff; border-radius: 26px; padding: 22px;
+    width: 90%; max-width: 720px; display: flex; gap: 22px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    position: relative;
+}
+#carImg { width: 50%; border-radius: 18px; object-fit: cover; }
+.modal-info { width: 50%; text-align: left; }
+.close-x { position: absolute; top: 18px; right: 24px; font-size: 28px; cursor: pointer; opacity:.7; transition:.2s; }
+.close-x:hover { opacity:1; }
+
+.variant-btn { display:inline-block; padding:8px 14px; margin:4px;
+    border-radius:10px; background:#eee; cursor:pointer; font-weight:600; transition:.2s;
+}
+.variant-btn.active { background:#111; color:#fff; }
+
+.buy-btn { margin-top:18px; width:100%; padding:12px; border-radius:12px;
+    font-size:18px; font-weight:600; background:#111; color:#fff; cursor:pointer; transition:.25s;
+}
+.buy-btn:hover { opacity:.85; }
+</style>
+</head>
+
+<body>
+
+<div class="top-info">
+    <svg class="back-arrow" onclick="location.href='dealership.html'" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    <div class="info-box" id="balanceBox">Баланс: ...</div>
+</div>
+
+<div class="page-title">Mercedes-Benz</div>
+
+<div class="switcher">
+    <span class="switch-btn active" id="tabMB" onclick="showMB()">Mercedes-Benz</span>
+    <span class="switch-btn" id="tabAMG" onclick="showAMG()">AMG</span>
+    <span class="switch-btn" id="tabMAY" onclick="showMAY()">Maybach</span>
+</div>
+
+<div class="cars" id="cars"></div>
+
+<div class="modal-bg" id="modalBg">
+    <div class="modal">
+        <div class="close-x" onclick="closeModal()">×</div>
+        <img id="carImg">
+        <div class="modal-info">
+            <h2 id="carTitle"></h2>
+            <div id="variants"></div>
+            <p id="specs" style="margin-top:8px;color:#555;"></p>
+            <h3 id="price"></h3>
+            <button class="buy-btn" onclick="buyCar()">Купить</button>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/bankNotify.js"></script>
+<script>
+function readRub(k){return parseFloat(localStorage.getItem(k+'_rub'))||0;}
+function fmt(n){return Number(n).toLocaleString('ru-RU');}
+function cur(){return localStorage.getItem("currency")||"₽";}
+const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+function updateBalance(){const b=readRub("balance"),c=cur();balanceBox.textContent="Баланс: "+fmt(b*rates[c])+" "+c;}
+updateBalance();
+
+/* FULL RESTORED CAR LIST (converted to BMW-grade classes) */
+const carsMB = [
+{name:"A-Class (W177)",class:"B",img:"assets/car/mercedes/a_w177.png",variants:[{name:"A200",power:163,drive:"FWD",zero:8.1,price:3200000}]},
+{name:"C-Class (W206)",class:"C",img:"assets/car/mercedes/c_w206.png",variants:[{name:"C200",power:204,drive:"RWD",zero:7.1,price:4500000},{name:"C300",power:258,drive:"AWD",zero:6.0,price:5200000}]},
+{name:"E-Class (W214)",class:"C",img:"assets/car/mercedes/e_w214.png",variants:[{name:"E200",power:204,drive:"RWD",zero:7.5,price:5650000},{name:"E300",power:258,drive:"RWD",zero:6.2,price:6450000}]},
+{name:"S-Class (W223)",class:"S",img:"assets/car/mercedes/s_w223.png",variants:[{name:"S450",power:367,drive:"AWD",zero:5.1,price:11800000},{name:"S500",power:435,drive:"AWD",zero:4.9,price:13400000}]},
+{name:"GLC (X254)",class:"X",img:"assets/car/mercedes/glc_x254.png",variants:[{name:"GLC300",power:258,drive:"AWD",zero:6.2,price:6300000}]},
+{name:"GLE (V167)",class:"X",img:"assets/car/mercedes/gle_v167.png",variants:[{name:"GLE350",power:258,drive:"AWD",zero:7.1,price:8200000}]},
+{name:"GLS (X167)",class:"X",img:"assets/car/mercedes/gls_x167.png",variants:[{name:"GLS450",power:381,drive:"AWD",zero:6.1,price:12400000}]},
+{name:"G-Class (W463)",class:"S",img:"assets/car/mercedes/g_w463.png",variants:[{name:"G350d",power:286,drive:"AWD",zero:8.0,price:17200000},{name:"G500",power:422,drive:"AWD",zero:5.9,price:19500000}]}
+];
+
+const carsAMG = [
+{name:"A45 S AMG (W177)",class:"M",img:"assets/car/mercedes/a45_amg_w177.png",variants:[{name:"A45S",power:421,drive:"AWD",zero:3.9,price:7100000}]},
+{name:"C63 S AMG (W206)",class:"M",img:"assets/car/mercedes/c63_amg_w206.png",variants:[{name:"C63 S",power:680,drive:"AWD",zero:3.4,price:12400000}]},
+{name:"E63 S AMG (W213)",class:"M",img:"assets/car/mercedes/e63_amg_w213.png",variants:[{name:"E63 S",power:612,drive:"AWD",zero:3.2,price:13600000}]},
+{name:"S63 AMG (W223)",class:"M",img:"assets/car/mercedes/s63_amg_w223.png",variants:[{name:"S63 E Perf",power:802,drive:"AWD",zero:3.3,price:19800000}]},
+{name:"GLC63 AMG (X254)",class:"M",img:"assets/car/mercedes/glc63_amg_x254.png",variants:[{name:"GLC63 S",power:680,drive:"AWD",zero:3.8,price:13800000}]},
+{name:"GLE63 AMG (V167)",class:"M",img:"assets/car/mercedes/gle63_amg_v167.png",variants:[{name:"GLE63 S",power:612,drive:"AWD",zero:3.9,price:15800000}]},
+{name:"GLS63 AMG (X167)",class:"M",img:"assets/car/mercedes/gls63_amg_x167.png",variants:[{name:"GLS63",power:612,drive:"AWD",zero:4.2,price:17300000}]},
+{name:"G63 AMG (W463)",class:"M",img:"assets/car/mercedes/g63_amg_w463.png",variants:[{name:"G63",power:585,drive:"AWD",zero:4.5,price:23500000}]},
+{name:"AMG GT 4-Door (X290)",class:"M",img:"assets/car/mercedes/amg_gt4_x290.png",variants:[{name:"63 S",power:639,drive:"AWD",zero:3.2,price:18900000}]}
+];
+
+const carsMAY = [
+{name:"Maybach S580 (X223)",class:"S",img:"assets/car/mercedes/maybach_s580_x223.png",variants:[{name:"S580",power:503,drive:"AWD",zero:4.8,price:19400000}]},
+{name:"Maybach S680 (X223)",class:"S",img:"assets/car/mercedes/maybach_s680_x223.png",variants:[{name:"S680",power:612,drive:"AWD",zero:4.4,price:23800000}]},
+{name:"Maybach GLS600 (X167)",class:"S",img:"assets/car/mercedes/maybach_gls600_x167.png",variants:[{name:"GLS600",power:557,drive:"AWD",zero:5.3,price:24000000}]}
+];
+
+/* RENDER */
+let currentCars=carsMB;
+function render(){
+ cars.innerHTML="";
+ currentCars.forEach((c,i)=>cars.innerHTML+=`
+  <div class="car-card" onclick="openCar(${i})">
+    <img src="../${c.img}">
+    <div class="car-name">${c.name}</div>
+    <div class="car-price">от ${fmt(c.variants[0].price)} ₽</div>
+  </div>`);
+}
+render();
+
+function showMB(){currentCars=carsMB;tabMB.classList.add("active");tabAMG.classList.remove("active");tabMAY.classList.remove("active");render();}
+function showAMG(){currentCars=carsAMG;tabAMG.classList.add("active");tabMB.classList.remove("active");tabMAY.classList.remove("active");render();}
+function showMAY(){currentCars=carsMAY;tabMAY.classList.add("active");tabAMG.classList.remove("active");tabMB.classList.remove("active");render();}
+
+let selectedModel, selectedVariant=0;
+function openCar(i){selectedModel=currentCars[i];selectedVariant=0;showModal();}
+function closeModal(){modalBg.style.display="none";}
+function showModal(){
+ const m=selectedModel,v=m.variants[selectedVariant],c=cur();
+ modalBg.style.display="flex";
+ carImg.src="../"+m.img;
+ carTitle.textContent=m.name+" — "+v.name+" (2025)";
+ variants.innerHTML=m.variants.map((x,i)=>`<span class="variant-btn ${i==selectedVariant?'active':''}" onclick="setVariant(${i})">${x.name}</span>`).join("");
+ specs.textContent=`${v.power} л.с. | ${v.drive} | 0-100: ${v.zero} сек`;
+ price.textContent="Цена: "+fmt(v.price*rates[c])+" "+c;
+}
+function setVariant(i){selectedVariant=i;showModal();}
+
+function buyCar(){
+ const v=selectedModel.variants[selectedVariant];
+ let bal=readRub("balance");
+ if(bal < v.price) return showBankNotification(0,"Недостаточно средств ❌");
+ bal-=v.price; localStorage.setItem("balance_rub",bal); updateBalance();
+
+ let garage=JSON.parse(localStorage.getItem("garage")||"[]");
+ garage.push({
+   brand:"Mercedes-Benz",
+   model:selectedModel.name,
+   variant:v.name,
+   year:2025,
+   power:v.power,
+   drive:v.drive,
+   zero:v.zero,
+   class:selectedModel.class,
+   priceRub:v.price,
+   image:selectedModel.img,
+   mileage:0,
+   stage:0
+ });
+ localStorage.setItem("garage",JSON.stringify(garage));
+ closeModal();
+ showBankNotification(-v.price,"Покупка успешна ✅");
+}
+
+/* AUTHORINOK CATALOG */
+localStorage.setItem("catalog_mercedes", JSON.stringify(
+  [...carsMB, ...carsAMG, ...carsMAY].flatMap(m => m.variants.map(v => ({
+    brand:"Mercedes-Benz",
+    model:m.name,
+    variant:v.name,
+    power:v.power,
+    zero:v.zero,
+    drive:v.drive,
+    class:m.class,
+    price:v.price,
+    img:m.img,
+    yearStart:2025
+  })))
+));
+</script>
+
+</body>
+</html>

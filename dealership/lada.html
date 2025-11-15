@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Lada — INFINITY Auto</title>
+
+<style>
+body { margin: 0; font-family: Inter, sans-serif; background: #ffffff; }
+.top-info { position: fixed; top: 16px; left: 16px; display: flex; align-items: center; gap: 14px; z-index: 1000; }
+.info-box {
+    background: rgba(255,255,255,0.35); backdrop-filter: blur(12px);
+    border-radius: 18px; padding: 8px 16px; font-size: 18px; font-weight: 600;
+    border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+}
+.back-arrow { width: 30px; height: 30px; cursor: pointer; transition:.25s; opacity:.9; }
+.back-arrow:hover { transform: translateX(-4px); opacity:1; }
+
+.page-title { text-align:center; font-size:27px; font-weight:700; margin-top:90px; }
+
+.switcher { text-align:center; margin-top: 14px; }
+.switch-btn {
+    display:inline-block; margin: 0 10px; padding: 6px 14px;
+    font-size:18px; font-weight:600; cursor:pointer;
+    border-bottom:3px solid transparent; transition:.25s;
+}
+.switch-btn.active { border-bottom:3px solid #000; }
+
+.cars {
+    margin-top: 30px; display: grid; grid-template-columns: repeat(3, 300px);
+    justify-content: center; gap: 32px; padding-bottom: 60px;
+}
+.car-card { width: 300px; background: #fff; border-radius: 26px; padding: 18px;
+    cursor: pointer; transition: .28s;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.28), 0 0 18px rgba(0,0,0,0.22);
+}
+.car-card:hover { transform: scale(1.05);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.36), 0 0 22px rgba(0,0,0,0.25);
+}
+.car-card img { width:100%; border-radius:18px;}
+.car-name { font-size:17px; font-weight:600; margin-top:6px; }
+.car-price { font-size:15px; color:#444; }
+
+.modal-bg { position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(7px);
+    display: none; justify-content: center; align-items: center; z-index: 2000;
+}
+.modal {
+    background: #fff; border-radius: 26px; padding: 22px;
+    width: 90%; max-width: 720px; display: flex; gap: 22px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    position: relative;
+}
+#carImg { width: 50%; border-radius: 18px; object-fit: cover; }
+.modal-info { width: 50%; text-align: left; }
+.close-x { position: absolute; top: 18px; right: 24px; font-size: 28px; cursor: pointer; opacity:.7; transition:.2s; }
+.close-x:hover { opacity:1; }
+
+.variant-btn { display:inline-block; padding:8px 14px; margin:4px;
+    border-radius:10px; background:#eee; cursor:pointer; font-weight:600; transition:.2s;
+}
+.variant-btn.active { background:#111; color:#fff; }
+
+.buy-btn { margin-top:18px; width:100%; padding:12px; border-radius:12px;
+    font-size:18px; font-weight:600; background:#111; color:#fff; cursor:pointer; transition:.25s;
+}
+.buy-btn:hover { opacity:.85; }
+</style>
+</head>
+
+<body>
+
+<div class="top-info">
+    <svg class="back-arrow" onclick="location.href='dealership.html'" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    <div class="info-box" id="balanceBox">Баланс: ...</div>
+</div>
+
+<div class="page-title">Lada</div>
+
+<div class="switcher">
+    <span class="switch-btn active" id="tabLada" onclick="showLada()">Lada</span>
+    <span class="switch-btn" id="tabNiva" onclick="showNiva()">Niva</span>
+    <span class="switch-btn" id="tabSport" onclick="showSport()">Sport</span>
+</div>
+
+<div class="cars" id="cars"></div>
+
+<div class="modal-bg" id="modalBg">
+    <div class="modal">
+        <div class="close-x" onclick="closeModal()">×</div>
+        <img id="carImg">
+        <div class="modal-info">
+            <h2 id="carTitle"></h2>
+            <div id="variants"></div>
+            <p id="specs" style="margin-top:8px;color:#555;"></p>
+            <h3 id="price"></h3>
+            <button class="buy-btn" onclick="buyCar()">Купить</button>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/bankNotify.js"></script>
+
+<script>
+function readRub(k){return parseFloat(localStorage.getItem(k+'_rub'))||0;}
+function fmt(n){return Number(n).toLocaleString('ru-RU');}
+function cur(){return localStorage.getItem("currency")||"₽";}
+const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+function updateBalance(){const b=readRub("balance"),c=cur();document.getElementById("balanceBox").textContent="Баланс: "+fmt(b*rates[c])+" "+c;}
+updateBalance();
+
+/* Lada */
+const cars = [
+ {name:"Granta",img:"assets/car/lada/granta.png",variants:[
+   {name:"Classic",power:90,drive:"FWD",zero:11.2,price:749900},
+   {name:"Life",power:106,drive:"FWD",zero:10.5,price:1197000}]},
+
+ {name:"Granta Лифтбэк",img:"assets/car/lada/granta_lift.png",variants:[
+   {name:"Classic",power:90,drive:"FWD",zero:11.3,price:1077000},
+   {name:"Life",power:106,drive:"FWD",zero:10.6,price:1227000}]},
+
+ {name:"Granta Cross",img:"assets/car/lada/granta_cross.png",variants:[
+   {name:"Comfort",power:90,drive:"FWD",zero:11.2,price:1175000},
+   {name:"Quest",power:106,drive:"FWD",zero:10.8,price:1270000}]},
+
+ {name:"ISKRA Седан",img:"assets/car/lada/iskra.png",variants:[
+   {name:"Classic",power:90,drive:"FWD",zero:10.0,price:1249000},
+   {name:"Techno",power:106,drive:"FWD",zero:10.5,price:1669000}]},
+
+ {name:"ISKRA SW",img:"assets/car/lada/iskra_sw.png",variants:[
+   {name:"Enjoy 5MT",power:90,drive:"FWD",zero:13.9,price:1499000},
+   {name:"Enjoy AT",power:106,drive:"FWD",zero:13.4,price:1649000}]},
+
+ {name:"ISKRA SW Cross",img:"assets/car/lada/iskra_cross.png",variants:[
+   {name:"Enjoy 6MT",power:106,drive:"FWD",zero:10.5,price:1629000},
+   {name:"Techno",power:106,drive:"FWD",zero:10.5,price:1799000}]},
+
+ {name:"Vesta",img:"assets/car/lada/vesta.png",variants:[
+   {name:"Comfort",power:106,drive:"FWD",zero:11.3,price:1239900},
+   {name:"Life",power:122,drive:"FWD",zero:10.6,price:1701000}]},
+
+ {name:"Vesta Cross",img:"assets/car/lada/vesta_cross.png",variants:[
+   {name:"Life",power:106,drive:"FWD",zero:12.9,price:1759000},
+   {name:"Techno",power:122,drive:"FWD",zero:10.6,price:2077000}]},
+
+ {name:"Vesta SW",img:"assets/car/lada/vesta_sw.png",variants:[
+   {name:"Comfort",power:106,drive:"FWD",zero:12.5,price:1655000},
+   {name:"Techno",power:122,drive:"FWD",zero:10.8,price:2006000}]},
+
+];
+
+/* M */
+const carsNiva = [
+
+];
+
+/* Sport */
+const carsSport = [
+
+];
+
+
+/* ✅ Правильный каталог для авторынка */
+localStorage.setItem("catalog_lada", JSON.stringify(
+  [...cars, ...carsNiva, ...carsSport].flatMap(m => m.variants.map(v => ({
+    brand:"Lada",
+    model:m.name,
+    variant:v.name,
+    price:v.price,
+    img:m.img,
+    power: v.power,      
+    zero: v.zero,        
+    drive: v.drive,
+    body:(m.name.match(/\((.*?)\)/)?.[1] || ""),
+    yearStart:(
+      m.name.includes("Granta") ? 2021 :
+      m.name.includes("Granta Лифтбэк") ? 2018 :
+      m.name.includes("Granta Cross") ? 2020 :
+      m.name.includes("ISKRA Седан") ? 2023 :
+      m.name.includes("ISKRA SW") ? 2024 :
+      m.name.includes("ISKRA SW Cross") ? 2018 :
+      m.name.includes("Vesta") ? 2018 :
+      m.name.includes("Vesta Cross") ? 2020 :
+      m.name.includes("Vesta SW") ? 2019 :
+      2021
+    )
+  })))
+));
+
+
+let currentCars=cars;
+
+const wrap=document.getElementById("cars");
+function render(){
+ wrap.innerHTML="";
+ currentCars.forEach((c,i)=>wrap.innerHTML+=`
+  <div class="car-card" onclick="openCar(${i})">
+    <img src="../${c.img}">
+    <div class="car-name">${c.name}</div>
+    <div class="car-price">от ${fmt(c.variants[0].price)} ₽</div>
+  </div>`);
+}
+render();
+
+function showLada(){currentCars=cars;tabLada.classList.add("active");tabNiva.classList.remove("active");tabSport.classList.remove("active");render();}
+function showNiva(){currentCars=carsNiva;tabNiva.classList.add("active");tabLada.classList.remove("active");tabSport.classList.remove("active");render();}
+function showSport(){currentCars=carsSport;tabSport.classList.add("active");tabLada.classList.remove("active");tabNiva.classList.remove("active");render();}
+
+let selectedModel, selectedVariant=0;
+function openCar(i){selectedModel=currentCars[i];selectedVariant=0;showModal();}
+function closeModal(){modalBg.style.display="none";}
+function showModal(){
+ const m=selectedModel,v=m.variants[selectedVariant],c=cur();
+ modalBg.style.display="flex";
+ carImg.src="../"+m.img;
+ carTitle.textContent=m.name+" — "+v.name+" (2025)";
+ variants.innerHTML=m.variants.map((x,i)=>`<span class="variant-btn ${i==selectedVariant?'active':''}" onclick="setVariant(${i})">${x.name}</span>`).join("");
+ specs.textContent=`${v.power} л.с. | ${v.drive} | 0-100: ${v.zero} сек`;
+ price.textContent="Цена: "+fmt(v.price*rates[c])+" "+c;
+}
+function setVariant(i){selectedVariant=i;showModal();}
+function buyCar(){
+ const v=selectedModel.variants[selectedVariant];
+ let bal=readRub("balance");
+ if(bal < v.price) return showBankNotification(0,"Недостаточно средств ❌");
+ bal-=v.price; localStorage.setItem("balance_rub",bal); updateBalance();
+ let garage=JSON.parse(localStorage.getItem("garage")||"[]");
+ garage.push({brand:"Lada",model:selectedModel.name,variant:v.name,year:2025,power:v.power,drive:v.drive,zero:v.zero,priceRub:v.price,image:selectedModel.img});
+ localStorage.setItem("garage",JSON.stringify(garage));
+ closeModal();
+ showBankNotification(-v.price,"Успешная покупка ✔");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Покупка — Продуктовый магазин</title>
+<style>
+  :root { --accent:#00e0c6; --glass: rgba(255,255,255,.15); }
+  html,body{margin:0;height:100%;font-family:'Inter',system-ui,Arial,sans-serif;background:linear-gradient(180deg,#20C6B8 0%,#1A2C5B 100%);color:#fff}
+  .top-info{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;flex-wrap:wrap;z-index:1000}
+  .info-box{background:var(--glass);border:1px solid rgba(255,255,255,.25);backdrop-filter: blur(10px);border-radius:20px;padding:10px 16px;font-weight:800}
+  .wrap{padding:120px 14px 110px;max-width:760px;margin:0 auto}
+  .title{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:12px;font-size:22px;font-weight:900}
+  .sub{opacity:.9;text-align:center;margin-bottom:16px}
+  .grid{display:grid;grid-template-columns: repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .opt{background:#fff;color:#111;border-radius:16px;padding:12px;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.22);border:2px solid transparent;transition:.2s}
+  .opt:hover{transform: translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.28)}
+  .opt.selected{border-color:#00e0c6}
+  .opt h3{margin:0 0 8px;font-size:18px}
+  .row{display:flex;justify-content:space-between;margin:6px 0}
+  .muted{color:#555;font-weight:600}.strong{font-weight:900}
+  .form{background:#fff;color:#111;margin-top:14px;border-radius:16px;padding:12px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+  .form label{display:block;font-weight:700;margin-bottom:6px}
+  .form input{width:100%;padding:12px;border-radius:12px;border:1px solid #e5e7eb;font-size:16px}
+  .buy{margin-top:12px;width:100%;background:var(--accent);color:#03201b;border:none;border-radius:12px;padding:14px;font-weight:900;cursor:pointer}
+  .buy:disabled{opacity:.6;cursor:not-allowed}
+  .hint{font-size:12px;color:#555;margin-top:6px}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:70px;background:var(--glass);backdrop-filter: blur(10px);display:flex;justify-content:space-around;align-items:center;z-index:1000}
+  .nav-item{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:#fff;font-size:12px}
+  .nav-item img{width:28px;height:28px;margin-bottom:4px}
+  .nav-item.active span{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="top-info">
+  <div class="info-box" id="balanceBox">Баланс: 0 ₽</div>
+  <div class="info-box" id="incomeBox">💰 Доход в час: 0 ₽</div>
+</div>
+
+<div class="wrap">
+  <div class="title">Продуктовый магазин — выбор сети</div>
+  <div class="sub">Выбери сеть, задай имя магазина и купи первый уровень.</div>
+
+  <div class="grid" id="options">
+    <div class="opt" data-stage="local"><h3>🏪 Местный магазин</h3>
+      <div class="row"><div class="muted">Цена открытия</div><div class="strong" id="c_local">—</div></div>
+      <div class="row"><div class="muted">Доход в час</div><div class="strong" id="i_local">—</div></div>
+      <div class="row"><div class="muted">Доход / 15с</div><div class="strong" id="t_local">—</div></div>
+    </div>
+    <div class="opt" data-stage="chain"><h3>🛒 Небольшая сеть</h3>
+      <div class="row"><div class="muted">Цена открытия</div><div class="strong" id="c_chain">—</div></div>
+      <div class="row"><div class="muted">Доход в час</div><div class="strong" id="i_chain">—</div></div>
+      <div class="row"><div class="muted">Доход / 15с</div><div class="strong" id="t_chain">—</div></div>
+    </div>
+    <div class="opt" data-stage="corp"><h3>🏬 Крупная сеть</h3>
+      <div class="row"><div class="muted">Цена открытия</div><div class="strong" id="c_corp">—</div></div>
+      <div class="row"><div class="muted">Доход в час</div><div class="strong" id="i_corp">—</div></div>
+      <div class="row"><div class="muted">Доход / 15с</div><div class="strong" id="t_corp">—</div></div>
+    </div>
+  </div>
+
+  <div class="form">
+    <label for="shopName">Название магазина</label>
+    <input id="shopName" maxlength="24" placeholder="Например: Harvest Hub">
+    <button class="buy" id="buyBtn" disabled>Купить и открыть</button>
+    <div class="hint">После покупки откроется страница выбранной сети. Цены и доходы — RUB, конвертация только в UI.</div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <a href="../fun.html" class="nav-item"><img src="../assets/fun.png"><span>Развлечения</span></a>
+  <a href="../business.html" class="nav-item active"><img src="../assets/business.png"><span>Бизнесы</span></a>
+  <a href="../index.html" class="nav-item"><img src="../assets/earn.png"><span>Заработок</span></a>
+  <a href="../profile.html" class="nav-item"><img src="../assets/profile.png"><span>Профиль</span></a>
+  <a href="../settings.html" class="nav-item"><img src="../assets/settings.png"><span>Настройки</span></a>
+</div>
+
+<script>
+  // ==== утилы
+  const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+  const cur=()=>localStorage.getItem('currency')||'₽';
+  const fmt2=n=>Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BAL_K='balance_rub', IPH_K='income_per_hour';
+  const getRub=k=>parseFloat(localStorage.getItem(k)||'0')||0;
+  const setRub=(k,v)=>localStorage.setItem(k,String(v));
+
+  // ключи по сетям
+  const K={
+    local:{lvl:'biz_grocery_local_lvl',iph:'biz_grocery_local_iph',name:'biz_grocery_local_name',inv:'biz_grocery_local_invested_rub'},
+    chain:{lvl:'biz_grocery_chain_lvl',iph:'biz_grocery_chain_iph',name:'biz_grocery_chain_name',inv:'biz_grocery_chain_invested_rub'},
+    corp: {lvl:'biz_grocery_corp_lvl', iph:'biz_grocery_corp_iph', name:'biz_grocery_corp_name', inv:'biz_grocery_corp_invested_rub'},
+  };
+
+  // параметры L1
+  const P={
+    local:{cost:150000, iph:3600},
+    chain:{cost:1200000, iph:30000},
+    corp: {cost:9600000, iph:240000},
+  };
+
+  function refreshBars(){
+    const c=cur();
+    document.getElementById('balanceBox').textContent=`Баланс: ${fmt2(getRub(BAL_K)*rates[c])} ${c}`;
+    document.getElementById('incomeBox').textContent=`💰 Доход в час: ${fmt2((parseFloat(localStorage.getItem(IPH_K))||0)*rates[c])} ${c}`;
+  }
+  function fillOptions(){
+    const c=cur();
+    const fill=(id, val)=>document.getElementById(id).textContent=`${fmt2(val*rates[c])} ${c}`;
+    fill('c_local',P.local.cost); fill('i_local',P.local.iph); fill('t_local',P.local.iph/240);
+    fill('c_chain',P.chain.cost); fill('i_chain',P.chain.iph); fill('t_chain',P.chain.iph/240);
+    fill('c_corp', P.corp.cost ); fill('i_corp', P.corp.iph ); fill('t_corp', P.corp.iph/240);
+  }
+  refreshBars(); fillOptions();
+
+  // если какая-то сеть уже куплена, всё равно позволяем покупать другие (каждая — отдельная страница)
+
+  // выбор
+  let selected=null;
+  document.querySelectorAll('.opt').forEach(el=>{
+    el.onclick=()=>{ document.querySelectorAll('.opt').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected'); selected=el.dataset.stage; enable(); };
+  });
+  const nameInput=document.getElementById('shopName'), buyBtn=document.getElementById('buyBtn');
+  nameInput.addEventListener('input',enable);
+  function enable(){ buyBtn.disabled= !selected || nameInput.value.trim().length<2; }
+
+  // покупка L1
+  buyBtn.onclick=()=>{
+    if(!selected) return;
+    const nm=nameInput.value.trim();
+    const price=P[selected].cost;
+    let bal=getRub(BAL_K);
+    if(bal<price){ const c=cur(); alert(`Недостаточно средств: нужно ${fmt2(price*rates[c])} ${c}`); return; }
+
+    // списание, фиксация L1
+    setRub(BAL_K, bal-price);
+    localStorage.setItem(K[selected].lvl, '1');
+    setRub(K[selected].iph, P[selected].iph);
+    localStorage.setItem(K[selected].name, nm);
+    setRub(K[selected].inv, getRub(K[selected].inv)+price);
+
+    // прибавляем к глобальному IPH только вклад этой сети
+    const tot=(parseFloat(localStorage.getItem(IPH_K))||0)+P[selected].iph;
+    localStorage.setItem(IPH_K, String(tot));
+
+    // редирект на СВОЮ страницу сети
+    const target = selected==='local'?'grocery-local.html':(selected==='chain'?'grocery-chain.html':'grocery-corp.html');
+    location.replace(target);
+  };
+
+  setInterval(refreshBars,2000);
+</script>
+</body>
+</html>

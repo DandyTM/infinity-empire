@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Уборщик — Подработка</title>
+
+<style>
+:root { --accent: #00e0c6; }
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+  font-family: 'SF Pro Display', sans-serif;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.balance-box {
+  margin-top: 16px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.28);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 12px 28px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+h1 {
+  margin: 16px 0 4px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+#info {
+  margin-bottom: 6px;
+  opacity: 0.9;
+}
+
+.timer {
+  font-size: 22px;
+  margin-bottom: 6px;
+  opacity: 0.9;
+}
+
+.earned-box {
+  font-size: 22px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 6px 18px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.32);
+  display: none;
+}
+
+#game-area {
+  width: 400px;
+  height: 520px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.18);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.38);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.trash {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  background-image: url("../icons/trash.png");
+  background-size: cover;
+  background-position: center;
+  top: -60px;
+  cursor: pointer;
+}
+
+.controls {
+  margin-top: 14px;
+  display: flex;
+  gap: 14px;
+}
+
+button {
+  padding: 10px 26px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.45);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#startBtn {
+  position: absolute;
+  font-size: 24px;
+  padding: 12px 38px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="balance-box" id="balanceBox">Баланс: ...</div>
+
+<h1>Уборщик</h1>
+<p id="info">Нажми «Начать», и собери как можно больше мусора 🧹</p>
+
+<div class="timer" id="timerBox">Время: 30</div>
+
+<div class="earned-box" id="earnedBox">Заработано: 0 ₽</div>
+
+<div id="game-area">
+  <button id="startBtn">Начать</button>
+</div>
+
+<div class="controls">
+  <button id="restartBtn">Заново</button>
+  <button id="exitBtn">Выйти</button>
+</div>
+
+<script>
+const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+function readRub(k){ return parseFloat(localStorage.getItem(k+'_rub')) || 0; }
+function writeRub(k,v){ localStorage.setItem(k+'_rub', v); }
+function fmt(n){ return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function updateBalance(){
+  const currency = localStorage.getItem('currency') || '₽';
+  document.getElementById('balanceBox').textContent =
+  `Баланс: ${fmt(readRub('balance') * rates[currency])} ${currency}`;
+}
+updateBalance();
+
+let score = 0;
+let earned = 0;
+let coinPerTrash = 6; // ← цена за один мусор
+let timeLeft = 30;
+let playing = false;
+let spawnInterval, timerInterval;
+const area = document.getElementById("game-area");
+const timerBox = document.getElementById("timerBox");
+const earnedBox = document.getElementById("earnedBox");
+
+function spawnTrash(){
+  if(!playing) return;
+
+  let t = document.createElement("div");
+  t.className = "trash";
+  t.style.left = (Math.random() * (area.clientWidth - 48)) + "px";
+  t.style.top = "-60px";
+
+  t.onclick = () => {
+    score++;
+    earned += coinPerTrash;
+    earnedBox.textContent = `Заработано: ${earned} ₽`;
+    t.remove();
+  };
+
+  area.appendChild(t);
+
+  let fall = setInterval(() => {
+    t.style.top = (parseFloat(t.style.top) + 2.3) + "px";
+    if(parseFloat(t.style.top) > area.clientHeight){
+      clearInterval(fall);
+      t.remove();
+    }
+  }, 16);
+}
+
+function start(){
+  score = 0;
+  earned = 0;
+  timeLeft = 30;
+
+  earnedBox.textContent = "Заработано: 0 ₽";
+  earnedBox.style.display = "block";
+
+  playing = true;
+  document.getElementById("startBtn").style.display = "none";
+  document.getElementById("info").textContent = "Лови мусор!";
+
+  spawnInterval = setInterval(spawnTrash, 420);
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerBox.textContent = "Время: " + timeLeft;
+    if(timeLeft <= 0) end();
+  }, 1000);
+}
+
+function end(){
+  playing = false;
+  clearInterval(spawnInterval);
+  clearInterval(timerInterval);
+
+  writeRub("balance", readRub("balance") + earned);
+  updateBalance();
+
+  alert(`Собрано: ${score} мешков\nЗаработано: ${earned} ₽`);
+  document.getElementById("info").textContent = "Игра окончена.";
+  document.getElementById("startBtn").style.display = "block";
+}
+
+document.getElementById("startBtn").onclick = start;
+document.getElementById("restartBtn").onclick = start;
+document.getElementById("exitBtn").onclick = () => location.href="../business.html";
+</script>
+
+</body>
+</html>

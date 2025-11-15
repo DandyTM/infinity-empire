@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Авторынок — INFINITY Auto</title>
+
+<style>
+body{margin:0;font-family:Inter,sans-serif;background:#f6f6f6;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);position:sticky;top:0;z-index:10;}
+.back{cursor:pointer;font-size:22px;}
+.balance{font-size:18px;font-weight:600;}
+
+.top-controls{display:flex;justify-content:space-between;padding:0 26px;align-items:center;margin-top:10px;}
+.refresh-btn{background:#fff;border:1px solid #ccc;padding:7px 14px;border-radius:12px;cursor:pointer;transition:.2s;font-size:15px;}
+.refresh-btn:hover{background:#eee;}
+
+.sort-btn{background:#fff;border:1px solid #aaa;padding:7px 14px;border-radius:12px;cursor:pointer;font-size:14px;transition:.2s;margin-left:26px;}
+.sort-btn:hover{background:#eee;}
+
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;padding:26px;}
+.item{background:#fff;border-radius:18px;overflow:hidden;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.16);transition:.25s;opacity:0;transform:translateY(12px);}
+.item.show{opacity:1;transform:translateY(0);}
+.item:hover{transform:translateY(-4px);}
+.item img{width:100%;height:210px;object-fit:cover;}
+.card-info{padding:14px 18px;}
+.title{font-size:18px;font-weight:700;}
+.small{font-size:14px;color:#666;margin-top:3px;}
+.price{margin-top:10px;font-size:19px;font-weight:700;}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;}
+.modal{background:#fff;border-radius:22px;width:90%;max-width:700px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.35);position:relative;display:flex;gap:20px;}
+.close{position:absolute;top:14px;right:18px;font-size:26px;cursor:pointer;}
+
+.m-img{width:50%;height:100%;object-fit:cover;border-radius:14px;}
+.right{width:50%;}
+
+.stateBar{width:100%;height:13px;background:#ddd;border-radius:7px;margin-top:6px;overflow:hidden;}
+.stateFill{height:100%;border-radius:7px;transition:.35s;}
+
+.buy-btn,.tor-btn,.go-btn{width:100%;margin-top:12px;padding:12px;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;transition:.2s;}
+.buy-btn{background:#111;color:#fff;}
+.buy-btn:hover{opacity:.85;}
+.tor-btn{background:#eee;}
+.tor-btn:hover{background:#ddd;}
+.go-btn{background:#276EF1;color:#fff;}
+.go-btn:hover{opacity:.9;}
+
+/* окно торга */
+#torModalBg .modal{flex-direction:column;max-width:420px;animation:fade .25s;}
+@keyframes fade{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+
+.offer-info{text-align:center;margin-top:8px;font-size:17px;font-weight:600;}
+.seller-msg{text-align:center;margin-top:10px;font-size:15px;font-weight:600;color:#333;}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+<div class="back" onclick="location.href='../fun.html'">←</div>
+<div class="balance" id="balanceBox">Баланс: ...</div>
+</div>
+
+<div class="top-controls">
+<h2>Авторынок</h2>
+<div class="refresh-btn" onclick="refreshPaid()">Обновить (5 000 ₽)</div>
+</div>
+
+<button class="sort-btn" onclick="toggleSort()">Сортировка: Цена ↑</button>
+<button class="sort-btn" onclick="toggleFilters()">Фильтры</button>
+
+<div id="filterPanel" style="display:none;padding:20px;background:#fff;border-top:1px solid #ddd;">
+    <h3>Фильтры</h3>
+
+    <label>Марка:</label>
+    <select id="fBrand">
+        <option value="">Любая</option>
+        <option>BMW</option>
+        <option>Mercedes</option>
+        <option>Audi</option>
+    </select>
+
+
+
+    <label>Год от:</label>
+    <input type="number" id="fYearFrom" placeholder="Напр. 2015">
+
+    <label>Год до:</label>
+    <input type="number" id="fYearTo" placeholder="Напр. 2024">
+
+    <label>Пробег от (км):</label>
+    <input type="number" id="fMilFrom" placeholder="0">
+
+    <label>Пробег до (км):</label>
+    <input type="number" id="fMilTo" placeholder="200000">
+
+    <button class="refresh-btn" onclick="applyFilters()">Применить</button>
+    <button class="refresh-btn" onclick="resetFilters()">Сбросить</button>
+</div>
+
+<div class="list" id="list"></div>
+
+<!-- окно машины -->
+<div class="modal-bg" id="modalBg">
+<div class="modal">
+<div class="close" onclick="closeCar()">×</div>
+<img class="m-img" id="mImg">
+<div class="right">
+<h2 id="mTitle"></h2>
+<p id="mYear"></p>
+<p id="mMileage"></p>
+<p id="mStats"></p>
+<p id="mState"></p>
+<div class="stateBar"><div class="stateFill" id="stateFill"></div></div>
+<h3 id="mPrice"></h3>
+
+<button class="buy-btn" id="buyBtn" onclick="buyCar()">Купить</button>
+<button class="tor-btn" id="torBtn" onclick="startTor()">Торговаться</button>
+<button class="go-btn" id="goGarageBtn" onclick="toGarage()" style="display:none;">Перейти в гараж</button>
+</div>
+</div>
+</div>
+
+<!-- окно торга -->
+<div class="modal-bg" id="torModalBg" style="display:none;">
+<div class="modal">
+<div class="close" onclick="closeTor()">×</div>
+<h2>Торг</h2>
+<p id="torCarName" style="font-weight:600;text-align:center;"></p>
+<input type="range" id="torSlider" min="80" max="100" value="100" step="1" style="width:100%;margin-top:14px;">
+<div class="offer-info" id="offerInfo"></div>
+<div class="seller-msg" id="sellerMsg"></div>
+<button class="buy-btn" onclick="confirmTor()">Предложить</button>
+</div>
+</div>
+
+<script>
+function fmt(n){return Number(n).toLocaleString('ru-RU');}
+function R(){return parseFloat(localStorage.getItem('balance_rub'))||0;}
+function W(v){localStorage.setItem('balance_rub',v);}
+function UB(){balanceBox.textContent="Баланс: "+fmt(R())+" ₽";} UB();
+
+function getCatalog(){
+let a=JSON.parse(localStorage.getItem("catalog_bmw")||"[]");
+let b=JSON.parse(localStorage.getItem("catalog_mercedes")||"[]");
+let c=JSON.parse(localStorage.getItem("catalog_audi")||"[]");
+let d=JSON.parse(localStorage.getItem("catalog_lada")||"[]");
+return [...a,...b,...c, ...d];
+}
+
+let market = JSON.parse(localStorage.getItem("used_market")||"null");
+let lastGen = parseInt(localStorage.getItem("used_market_time")||"0");
+let now = Date.now();
+if(!market || now-lastGen > 10*60*1000) generateMarket();
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+function generateMarket(){
+let cars=getCatalog();
+market=[];
+for(let i=0;i<50;i++){
+let c=cars[rnd(0,cars.length-1)];
+let year=rnd(c.yearStart,2025);
+let age=2025-year;
+let mileage=rnd(2000*age,18000*age);
+let wE=rnd(0,40),wG=rnd(0,40),wS=rnd(0,40),wB=rnd(0,40),wC=rnd(0,40),wX=rnd(0,40);
+let avg=(wE+wG+wS+wB+wC+wX)/6;
+let state=100-avg;
+let price = c.price * (state/100) * (1 - (mileage/650000));
+price = Math.max(50000,Math.round(price/10000)*10000);
+market.push({...c,year,mileage,state,wear:{engine:wE,gearbox:wG,suspension:wS,brakes:wB,body:wC,electronics:wX},price,blocked:false});
+}
+localStorage.setItem("used_market",JSON.stringify(market));
+localStorage.setItem("used_market_time",Date.now());
+}
+
+let sortUp=true;
+function toggleSort(){sortUp=!sortUp;document.querySelector(".sort-btn").innerText="Сортировка: Цена "+(sortUp?"↑":"↓");renderList();}
+
+function renderList(){
+market.sort((a,b)=>sortUp?(a.price-b.price):(b.price-a.price));
+list.innerHTML="";
+market.forEach((c,i)=>{
+list.innerHTML+=`
+<div class="item" onclick="openCar(${i})">
+<img src="../${c.img}">
+<div class="card-info">
+<div class="title">${c.brand} ${c.model}</div>
+<div class="small">${c.year} • ${fmt(c.mileage)} км • Состояние: ${Math.round(c.state)}%</div>
+<div class="price">${fmt(c.price)} ₽</div>
+</div>
+</div>`;
+});
+setTimeout(()=>document.querySelectorAll('.item').forEach(e=>e.classList.add('show')),10);
+}
+renderList();
+
+let cur=null;
+function openCar(i){
+cur=i; let c=market[i];
+mImg.src="../"+c.img;
+mTitle.textContent=`${c.brand} ${c.model}`;
+mYear.textContent=`Год: ${c.year}`;
+mMileage.textContent=`Пробег: ${fmt(c.mileage)} км`;
+mStats.textContent=`${c.power} л.с. • 0-100 ${c.zero} с • ${c.drive}`;
+mState.textContent=`Состояние: ${Math.round(c.state)}%`;
+stateFill.style.width=c.state+"%";
+stateFill.style.background=c.state>70?"#4ad14a":c.state>45?"#f4c63c":"#e64545";
+mPrice.textContent=`${fmt(c.price)} ₽`;
+
+buyBtn.style.display="block";
+torBtn.style.display=c.blocked?"none":"block";
+goGarageBtn.style.display="none";
+modalBg.style.display="flex";
+}
+
+function closeCar(){modalBg.style.display="none";}
+
+function refreshPaid(){
+if(R()<5000)return alert("Нужно 5 000 ₽");
+W(R()-5000);UB();
+generateMarket();renderList();
+}
+
+// ======== ТОРГ ========
+function confirmTor(){
+    let c = market[cur];
+    let k = document.getElementById("torSlider").value / 100;
+    let offer = Math.round((c.price * k) / 10000) * 10000;
+
+    const moods = [
+        "🤝 Ладно, уговорил.",
+        "😐 Ну... допустим, пусть будет так.",
+        "😒 Вообще не хочу, но соглашусь.",
+        "😡 Ты чё? Ну ладно, по бартеру."
+    ];
+
+    let mood = rnd(1,4);
+
+    // Проверяем, примет ли продавец
+    let accept = (
+        (mood===1 && k>=0.88) ||
+        (mood===2 && k>=0.90) ||
+        (mood===3 && k>=0.94)
+    );
+
+    // Продавец отклоняет
+    if(!accept){
+        sellerMsg.textContent = "❌ Продавец: «Нет. Больше торговаться не буду.»";
+        market[cur].blocked = true;
+        localStorage.setItem("used_market", JSON.stringify(market));
+
+        document.getElementById("torSlider").disabled = true; // блокируем ползунок
+        document.querySelector("#sliderBox button.buy-btn").style.display = "none"; // убираем кнопку "Предложить"
+        return;
+    }
+
+    // Продавец согласен
+    c.price = offer;
+    mPrice.textContent = `${fmt(c.price)} ₽`;
+    sellerMsg.textContent = moods[mood-1];
+
+    localStorage.setItem("used_market", JSON.stringify(market));
+
+    document.getElementById("torSlider").disabled = true; // ползунок блокируем
+    document.querySelector("#sliderBox button.buy-btn").style.display = "none"; // убираем кнопку "Предложить"
+}
+
+
+// ======== ПОКУПКА ========
+function buyCar(){
+let c=market[cur];
+if(R()<c.price)return alert("Недостаточно средств!");
+W(R()-c.price);UB();
+let garage = JSON.parse(localStorage.getItem("garage")||"[]");
+
+garage.push({
+brand:c.brand,model:c.model,variant:c.variant||"",
+priceRub:c.price,image:c.img,power:c.power,zero:c.zero,drive:c.drive,mileage:c.mileage,
+wear:{
+engine:100-c.wear.engine,
+gearbox:100-c.wear.gearbox,
+suspension:100-c.wear.suspension,
+brakes:100-c.wear.brakes,
+body:100-c.wear.body,
+electronics:100-c.wear.electronics
+}
+});
+
+localStorage.setItem("garage",JSON.stringify(garage));
+buyBtn.style.display="none";
+torBtn.style.display="none";
+goGarageBtn.style.display="block";
+}
+
+function toGarage(){location.href="../garage.html";}
+
+let filtered = [...market];
+
+function toggleFilters(){
+    const p=document.getElementById("filterPanel");
+    p.style.display=p.style.display==="none"?"block":"none";
+}
+
+function applyFilters(){
+    const b=document.getElementById("fBrand").value;
+    const m=document.getElementById("fModel").value;
+    const yf=parseInt(document.getElementById("fYearFrom").value)||0;
+    const yt=parseInt(document.getElementById("fYearTo").value)||9999;
+    const mf=parseInt(document.getElementById("fMilFrom").value)||0;
+    const mt=parseInt(document.getElementById("fMilTo").value)||9999999;
+
+    filtered = market.filter(c=>
+        (b==""||c.brand===b)&&
+        (m==""||c.model===m)&&
+        (c.year>=yf && c.year<=yt)&&
+        (c.mileage>=mf && c.mileage<=mt)
+    );
+    renderListFiltered();
+}
+
+function resetFilters(){
+    filtered=[...market];
+    renderListFiltered();
+}
+
+function renderListFiltered(){
+    list.innerHTML="";
+    filtered.sort((a,b)=>sortUp?(a.price-b.price):(b.price-a.price));
+    filtered.forEach((c,i)=>{
+        list.innerHTML+=`
+        <div class="item" onclick="openCar(market.indexOf(c))">
+            <img src="../${c.img}">
+            <div class="card-info">
+                <div class="title">${c.brand} ${c.model}</div>
+                <div class="small">${c.year} • ${fmt(c.mileage)} км • Состояние: ${Math.round(c.state)}%</div>
+                <div class="price">${fmt(c.price)} ₽</div>
+            </div>
+        </div>`;
+    });
+    setTimeout(()=>document.querySelectorAll('.item').forEach(e=>e.classList.add('show')),10);
+}
+const modelMap={
+    "BMW":["2 Series","3 Series","4 Series","5 Series","X3","X4","X5","X6","X7","M2","M3","M4","M5","X3M","X4M","X5M","X6M","X7M","XM"],
+    "Mercedes":["A-Class","C-Class","E-Class","S-Class","G-Class","GLC","GLE","GLS"],
+    "Audi":["A3","A5","Q5","Q7","Q8"]
+};
+
+document.getElementById("fBrand").onchange=function(){
+    let brand=this.value;
+    let modelSel=document.getElementById("fModel");
+    modelSel.innerHTML=`<option value="">Любая</option>`;
+    if(modelMap[brand]){
+        modelMap[brand].forEach(m=>modelSel.innerHTML+=`<option>${m}</option>`);
+    }
+};
+
+</script>
+
+</body>
+</html>

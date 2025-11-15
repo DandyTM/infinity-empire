@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFINITY Empire — Развлечения</title>
+
+  <style>
+    :root { --accent: #00e0c6; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+      background-attachment: fixed;
+      color: #fff;
+    }
+
+    /* ✅ Баланс теперь по центру, без translate и без багов */
+    .top-info {
+      position: fixed;
+      top: 16px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .info-box {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 14px 26px;
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 0 12px rgba(0,0,0,0.25);
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 110px;
+    }
+
+    .salon-options {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+      padding-bottom: 110px;
+    }
+
+    .salon-card {
+      width: 200px;
+      padding: 18px;
+      text-align: center;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: .25s;
+      box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    }
+    .salon-card:hover {
+      transform: scale(1.06);
+    }
+
+    .salon-card img {
+      width: 100%;
+      border-radius: 18px;
+    }
+
+    .salon-card div {
+      margin-top: 8px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    /* ✅ Нижнее меню (как в бизнесах) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-item img { width: 28px; height: 28px; margin-bottom: 4px; }
+    .nav-item.active span { color: var(--accent); }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-info">
+    <div class="info-box" id="balanceBox">Баланс: 0,00 ₽</div>
+  </div>
+
+  <div class="page-title">Развлечения</div>
+
+  <div class="salon-options">
+
+    <div class="salon-card" onclick="location.href='dealership/dealership.html'">
+      <img src="assets/fun/car.png">
+      <div>Автосалон</div>
+    </div>
+
+    <div class="salon-card" onclick="location.href='dealership/usedcar.html'">
+      <img src="assets/fun/used.png">
+      <div>Б/У Авто</div>
+    </div>
+
+    <div class="salon-card" onclick="location.href='dealership/moto.html'">
+      <img src="assets/fun/moto.png">
+      <div>Мотосалон</div>
+    </div>
+
+    <div class="salon-card" onclick="location.href='dealership/gai.html'">
+      <img src="assets/fun/gai.png">
+      <div>ГАИ</div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <a href="fun.html" class="nav-item active"><img src="assets/fun.png"><span>Развлечения</span></a>
+    <a href="business.html" class="nav-item"><img src="assets/business.png"><span>Бизнесы</span></a>
+    <a href="index.html" class="nav-item"><img src="assets/earn.png"><span>Заработок</span></a>
+    <a href="profile.html" class="nav-item"><img src="assets/profile.png"><span>Профиль</span></a>
+    <a href="settings.html" class="nav-item"><img src="assets/settings.png"><span>Настройки</span></a>
+  </div>
+
+<script>
+  const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+  function readRub(key){ return parseFloat(localStorage.getItem(key+'_rub')) || 0; }
+  function fmt(num){ return Number(num).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  const currency = localStorage.getItem('currency') || '₽';
+  const balanceRub = readRub('balance');
+  const balance = (balanceRub * rates[currency]);
+  balanceBox.textContent = `Баланс: ${fmt(balance)} ${currency}`;
+</script>
+
+</body>
+</html>

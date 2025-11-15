@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Местный магазин — INFINITY Empire</title>
+<style>
+  :root{--accent:#00e0c6;--glass:rgba(255,255,255,.15)}
+  html,body{margin:0;height:100%;font-family:'Inter',system-ui,Arial,sans-serif;background:linear-gradient(180deg,#20C6B8 0%,#1A2C5B 100%);color:#fff}
+  .top-info{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;flex-wrap:wrap;z-index:1000}
+  .info-box{background:var(--glass);border:1px solid rgba(255,255,255,.25);backdrop-filter: blur(10px);border-radius:20px;padding:10px 16px;font-weight:800}
+  .wrap{padding:120px 14px 110px;max-width:760px;margin:0 auto}
+  .title-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px}
+  .title{font-size:22px;font-weight:900}
+  .gear{width:26px;height:26px;cursor:pointer;filter: drop-shadow(0 0 4px rgba(0,0,0,.35))}
+  .card{background:#fff;color:#111;border-radius:18px;padding:14px 14px 16px;box-shadow:0 10px 28px rgba(0,0,0,.22);max-width:760px;margin:0 auto}
+  .card h3{margin:0 0 8px;font-size:18px}
+  .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
+  .muted{color:#555;font-weight:600}.strong{font-weight:900}
+  .btn{width:100%;margin-top:10px;background:var(--accent);color:#03201b;border:none;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .hint{font-size:12px;color:#666;margin-top:6px}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:70px;background:var(--glass);backdrop-filter: blur(10px);display:flex;justify-content:space-around;align-items:center;z-index:1000}
+  .nav-item{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:#fff;font-size:12px}
+  .nav-item img{width:28px;height:28px;margin-bottom:4px}.nav-item.active span{color:var(--accent)}
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:2000}
+  .modal{width:min(92vw,560px);background:#0b182f;color:#e9f7f5;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.18);box-shadow:0 18px 48px rgba(0,0,0,.55)}
+  .modal h3{margin:0 0 10px;font-size:18px}
+  .kvs{display:grid;grid-template-columns: 1fr auto;row-gap:8px;column-gap:10px}
+  .kbd{font-weight:700;opacity:.9}.val{font-weight:900}
+  .modal-actions{display:flex;gap:10px;margin-top:14px}
+  .btn-ghost{flex:1;background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer}
+  .btn-danger{flex:1;background:#ff3b30;color:#fff;font-weight:900;border:none;border-radius:10px;padding:10px 12px;cursor:pointer}
+  .danger-note{font-size:12px;color:#ffb4af;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="top-info">
+  <div class="info-box" id="balanceBox">Баланс: 0 ₽</div>
+  <div class="info-box" id="incomeBox">💰 Доход в час: 0 ₽</div>
+</div>
+
+<div class="wrap">
+  <div class="title-row">
+    <div class="title" id="title">Местный магазин</div>
+    <img class="gear" id="gearBtn" src="../assets/icons/gear.svg" alt="Настройки" title="Настройки"/>
+  </div>
+
+  <div class="card">
+    <h3>🏪 Местный магазин — сеть</h3>
+    <div class="row"><div class="muted">Уровень</div><div class="strong" id="lvl">0</div></div>
+    <div class="row"><div class="muted">Доход/час</div><div class="strong" id="iph">0 ₽/ч</div></div>
+    <div class="row"><div class="muted">Цена следующего уровня</div><div class="strong" id="cost">—</div></div>
+    <button class="btn" id="btn">Купить/Улучшить</button>
+    <div class="hint">L1: 150 000 ₽; L2: 45 000 ₽; далее цена ×1.30 (кратно 1000), доход ×1.20/ур. (макс. L10)</div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <a href="../fun.html" class="nav-item"><img src="../assets/fun.png"><span>Развлечения</span></a>
+  <a href="../business.html" class="nav-item active"><img src="../assets/business.png"><span>Бизнесы</span></a>
+  <a href="../index.html" class="nav-item"><img src="../assets/earn.png"><span>Заработок</span></a>
+  <a href="../profile.html" class="nav-item"><img src="../assets/profile.png"><span>Профиль</span></a>
+  <a href="../settings.html" class="nav-item"><img src="../assets/settings.png"><span>Настройки</span></a>
+</div>
+
+<!-- Модалка -->
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3>Местный магазин — аналитика</h3>
+    <div class="kvs">
+      <div class="kbd">Имя сети</div><div class="val" id="m_name">—</div>
+      <div class="kbd">Заработано за всё время</div><div class="val" id="m_earned">0 ₽</div>
+      <div class="kbd">Капитализация (вложено)</div><div class="val" id="m_invested">0 ₽</div>
+      <div class="kbd">Текущий доход в час</div><div class="val" id="m_iph">0 ₽/ч</div>
+      <div class="kbd">Прогноз за 1 ч</div><div class="val" id="m_fore1">0 ₽</div>
+      <div class="kbd">Прогноз за 24 ч</div><div class="val" id="m_fore24">0 ₽</div>
+      <div class="kbd">Средний ROI</div><div class="val" id="m_roi">—</div>
+    </div>
+    <div class="danger-note">«Закрыть сеть» вернёт <b>30%</b> от капитализации этой сети и <u>сбросит её уровни и доход</u>.</div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="closeModalBtn">Закрыть</button>
+      <button class="btn-danger" id="closeNetBtn">Закрыть сеть (30%)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==== утилы/константы
+  const rates={"₽":1,"₸":6.5,"$":0.012,"€":0.011}, cur=()=>localStorage.getItem('currency')||'₽';
+  const fmt=n=>Number(n).toLocaleString('ru-RU'); const fmt2=n=>Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BAL_K='balance_rub', IPH_K='income_per_hour';
+  const getRub=k=>parseFloat(localStorage.getItem(k)||'0')||0, setRub=(k,v)=>localStorage.setItem(k,String(v));
+  const getInt=k=>parseInt(localStorage.getItem(k)||'0')||0, setInt=(k,v)=>localStorage.setItem(k,String(v));
+
+  // ключи ТОЛЬКО для местной сети
+  const K={ lvl:'biz_grocery_local_lvl', iph:'biz_grocery_local_iph', name:'biz_grocery_local_name',
+            inv:'biz_grocery_local_invested_rub', earned:'biz_grocery_local_earned_rub' };
+
+  // экономика
+  const baseCost=150000, l2=45000, costK=1.30, baseIPH=3600, incomeK=1.20, maxL=10;
+  const round1000=x=>Math.round(x/1000)*1000;
+
+  function priceOf(L){ if(L===1) return baseCost; if(L===2) return l2; let p=l2; for(let i=3;i<=L;i++) p=round1000(p*costK); return p; }
+  function nextPrice(lvl){ return priceOf(Math.min(lvl+1,maxL)); }
+  function iphOf(L){ if(L<=0) return 0; return Math.round(baseIPH * Math.pow(incomeK, L-1)); }
+
+  // если сети нет — отправить на мастер
+  if((getInt(K.lvl)||0)===0){ location.replace('grocery-start.html'); }
+
+  function refreshBars(){
+    const c=cur();
+    document.getElementById('balanceBox').textContent=`Баланс: ${fmt2(getRub(BAL_K)*rates[c])} ${c}`;
+    document.getElementById('incomeBox').textContent=`💰 Доход в час: ${fmt2((parseFloat(localStorage.getItem(IPH_K))||0)*rates[c])} ${c}`;
+  }
+  function refreshCard(){
+    const lvl=getInt(K.lvl), iph=iphOf(lvl), c=cur();
+    setRub(K.iph, iph);
+    document.getElementById('title').textContent = localStorage.getItem(K.name)||'Местный магазин';
+    document.getElementById('lvl').textContent=lvl;
+    document.getElementById('iph').textContent=`${fmt(iph*rates[c])} ${c}/ч`;
+    document.getElementById('cost').textContent=`${fmt(nextPrice(lvl)*rates[c])} ${c}`;
+    document.getElementById('btn').disabled = lvl>=maxL;
+  }
+  function recalcGlobalIPH(prevIph, newIph){
+    const total=(parseFloat(localStorage.getItem(IPH_K))||0) - prevIph + newIph;
+    localStorage.setItem(IPH_K, String(Math.max(0,total)));
+  }
+
+  document.getElementById('btn').onclick=()=>{
+    let lvl=getInt(K.lvl); if(lvl>=maxL) return;
+    const price=nextPrice(lvl), bal=getRub(BAL_K);
+    if(bal<price){ const c=cur(); alert(`Недостаточно средств: нужно ${fmt2(price*rates[c])} ${c}`); return; }
+    setRub(BAL_K, bal-price);
+    setRub(K.inv, getRub(K.inv)+price);
+    const prevI=iphOf(lvl);
+    lvl++; setInt(K.lvl,lvl);
+    const nowI=iphOf(lvl); setRub(K.iph, nowI);
+    recalcGlobalIPH(prevI, nowI);
+    refreshBars(); refreshCard();
+  };
+
+  // аналитика
+  const modalBack=document.getElementById('modalBack');
+  document.getElementById('gearBtn').onclick=openModal;
+  document.getElementById('closeModalBtn').onclick=()=>modalBack.style.display='none';
+  function openModal(){
+    const name=localStorage.getItem(K.name)||'Местный магазин';
+    const invested=getRub(K.inv), iph=getRub(K.iph), earned=getRub(K.earned), c=cur();
+    document.getElementById('m_name').textContent=name;
+    document.getElementById('m_earned').textContent=`${fmt2(earned*rates[c])} ${c}`;
+    document.getElementById('m_invested').textContent=`${fmt2(invested*rates[c])} ${c}`;
+    document.getElementById('m_iph').textContent=`${fmt2(iph*rates[c])} ${c}/ч`;
+    document.getElementById('m_fore1').textContent=`${fmt2(iph*rates[c])} ${c}`;
+    document.getElementById('m_fore24').textContent=`${fmt2(iph*24*rates[c])} ${c}`;
+    document.getElementById('m_roi').textContent=iph>0?`${fmt2(invested/iph)} ч`:'—';
+    modalBack.style.display='flex';
+  }
+
+  document.getElementById('closeNetBtn').onclick=()=>{
+    const invested=getRub(K.inv), payout=Math.floor(invested*0.30);
+    const c=cur(); if(!confirm(`Вернуть 30% капитализации: ${fmt2(payout*rates[c])} ${c}? Сеть будет сброшена.`)) return;
+    // выплата
+    setRub(BAL_K, getRub(BAL_K)+payout);
+    // убрать вклад из глобального дохода
+    const prevI = getRub(K.iph);
+    recalcGlobalIPH(prevI, 0);
+    // обнуление сети
+    setInt(K.lvl,0); setRub(K.iph,0); setRub(K.inv,0);
+    modalBack.style.display='none';
+    // вернуть пользователя на мастер (сеть закрыта)
+    alert('Сеть закрыта.');
+    location.replace('grocery-start.html');
+  };
+
+  // (накапливание заработка сети на тиках должно происходить в твоём глобальном интервале 15с: просто прибавляй долю этой сети в её ключ K.earned)
+  function init(){ refreshBars(); refreshCard(); setInterval(refreshBars,2000); }
+  init();
+</script>
+</body>
+</html>

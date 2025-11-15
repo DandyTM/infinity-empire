@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Грузчик — Подработка</title>
+
+<style>
+:root { --accent: #00e0c6; }
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #20C6B8 0%, #1A2C5B 100%);
+  font-family: 'SF Pro Display', sans-serif;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  text-align: center;
+}
+
+.balance-box {
+  margin-top: 16px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.28);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 12px 28px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+h1 {
+  margin: 14px 0 6px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+#info { opacity: .9; margin-bottom: 12px; }
+
+.earned-box {
+  font-size: 22px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 6px 18px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.32);
+  display: none;
+}
+
+#game-area {
+  width: 400px;
+  height: 420px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.38);
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.sequence {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.arrow-display {
+  font-size: 42px;
+  padding: 10px 18px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.38);
+}
+
+.controls {
+  margin-top: 14px;
+  display: flex;
+  gap: 14px;
+}
+
+button {
+  padding: 10px 26px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.45);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#startBtn {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.input-buttons {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.input-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.28);
+  border: 1px solid rgba(255,255,255,0.45);
+  backdrop-filter: blur(10px);
+  font-size: 36px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="balance-box" id="balanceBox">Баланс: ...</div>
+
+<h1>Грузчик</h1>
+<p id="info">Запомни последовательность и повтори её</p>
+
+<div class="earned-box" id="earnedBox">Заработано: 0 ₽</div>
+
+<div id="game-area">
+  <button id="startBtn">Начать</button>
+
+  <div class="sequence" id="sequenceBox"></div>
+
+  <div class="input-buttons">
+    <button class="input-btn" data-key="ArrowUp">↑</button>
+    <button class="input-btn" data-key="ArrowLeft">←</button>
+    <button class="input-btn" data-key="ArrowDown">↓</button>
+    <button class="input-btn" data-key="ArrowRight">→</button>
+  </div>
+</div>
+
+<div class="controls">
+  <button id="restartBtn">Заново</button>
+  <button id="exitBtn">Выйти</button>
+</div>
+
+<script>
+const rates = {"₽":1,"₸":6.5,"$":0.012,"€":0.011};
+function readRub(k){ return parseFloat(localStorage.getItem(k+'_rub')) || 0; }
+function writeRub(k,v){ localStorage.setItem(k+'_rub', v); }
+function fmt(n){ return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function updateBalance(){
+  const currency = localStorage.getItem('currency') || '₽';
+  balanceBox.textContent = `Баланс: ${fmt(readRub('balance') * rates[currency])} ${currency}`;
+}
+updateBalance();
+
+const arrows = ["ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"];
+let sequence = [];
+let inputIndex = 0;
+let playing = false;
+let earned = 0;
+let rewardPerRound = 15;
+
+function generateSequence() {
+  sequence = [];
+  let length = Math.floor(Math.random() * 5) + 2; // 2–6
+  for(let i=0;i<length;i++){
+    sequence.push(arrows[Math.floor(Math.random()*4)]);
+  }
+  showSequence();
+}
+
+function showSequence(){
+  sequenceBox.innerHTML = "";
+  sequence.forEach(a=>{
+    let el=document.createElement("div");
+    el.className="arrow-display";
+    el.textContent = arrowSymbol(a);
+    sequenceBox.appendChild(el);
+  });
+}
+
+function arrowSymbol(key){
+  return key==="ArrowUp"?"↑":
+         key==="ArrowLeft"?"←":
+         key==="ArrowDown"?"↓":
+         "→";
+}
+
+function startGame(){
+  earned = 0;
+  earnedBox.textContent = "Заработано: 0 ₽";
+  earnedBox.style.display = "block";
+  playing = true;
+  startBtn.style.display="none";
+  document.getElementById("info").textContent = "Запомни и повтори";
+  generateSequence();
+  inputIndex = 0;
+}
+
+function pressArrow(key){
+  if(!playing) return;
+
+  if(key === sequence[inputIndex]){
+    inputIndex++;
+    if(inputIndex >= sequence.length){
+      // раунд пройден
+      earned += rewardPerRound;
+      earnedBox.textContent = `Заработано: ${earned} ₽`;
+      generateSequence();
+      inputIndex = 0;
+    }
+  } else {
+    endGame();
+  }
+}
+
+function endGame(){
+  playing = false;
+  writeRub("balance", readRub("balance") + earned);
+  updateBalance();
+  alert(`Игра окончена\nЗаработано: ${earned} ₽`);
+  startBtn.style.display="block";
+  sequenceBox.innerHTML="";
+  earnedBox.style.display="none";
+  document.getElementById("info").textContent = "Можешь попробовать снова";
+}
+
+document.addEventListener("keydown", e => pressArrow(e.key));
+document.querySelectorAll(".input-btn").forEach(btn => {
+  btn.onclick = ()=>pressArrow(btn.dataset.key);
+});
+
+startBtn.onclick = startGame;
+restartBtn.onclick = startGame;
+exitBtn.onclick = ()=>location.href="../job.html";
+</script>
+
+</body>
+</html>
